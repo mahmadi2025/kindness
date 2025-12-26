@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Donate — Kindness for Afghans</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header class="header">
+  <div class="container">
+    <div class="brand">
+      <img src="assets/logo.png" alt="Logo" />
+      <h1>Kindness for Afghans</h1>
+    </div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="news.html">News</a>
+      <a href="donate.html" class="cta">Donate</a>
+    </nav>
+  </div>
+</header>
+<main class="container">
+  <h2>Donate via SEPA bank transfer</h2>
+  <p>Your support brings essentials and dignity to Afghan families.</p>
+
+  <section class="card">
+    <h3>Bank details (SEPA)</h3>
+    <p><strong>Account name:</strong> Kindness for Afghans</p>
+    <p><strong>IBAN:</strong> DE12 3456 7890 1234 5678 90</p>
+    <p><strong>BIC/SWIFT:</strong> GENERICONE</p>
+    <p><strong>Reference (Verwendungszweck):</strong> Donation — Kindness for Afghans</p>
+  </section>
+
+  <section class="card">
+    <h3>Scan & donate (EPC/Girocode)</h3>
+    <div class="grid">
+      <div><img class="responsive" src="assets/epc-placeholder.png" alt="EPC QR placeholder" /></div>
+      <div>
+        <p>Copy the EPC payload below into any EPC QR generator if your app requires it:</p>
+        <div class="code"><pre>BCD
+002
+1
+SCT
+GENERICONE
+Kindness for Afghans
+DE12345678901234567890
+
+
+
+Support for Afghan families
+</pre></div>
+      </div>
+    </div>
+    <p class="kicker">Tip: Leave the amount line blank if you want donors to choose an amount in their app.</p>
+  </section>
+
+  <section class="card">
+    <h3>Monthly support (Standing Order)</h3>
+    <ol>
+      <li>Open your online banking and choose <em>Standing Order</em>.</li>
+      <li>Enter our IBAN/BIC, pick a monthly amount (e.g., €25), and use the reference above.</li>
+      <li>Confirm. You can edit or cancel any time.</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h3>Receipts & transparency</h3>
+    <p>We provide receipts upon request and publish quarterly impact updates.</p>
+    <form class="form-inline" action="#" method="post" onsubmit="return false">
+      <label for="email">Request a receipt or updates:</label>
+      <input type="email" id="email" placeholder="you@example.com" />
+      <a class="btn" href="#">Send</a>
+    </form>
+  </section>
+</main>
+<footer class="footer">
+  <div class="container">
+    <p>© Kindness for Afghans — Donate safely via SEPA. Contact: donations@kindnessforafghans.org</p>
+  </div>
+</footer>
+</body>
+</html>
