@@ -1,0 +1,50 @@
+/* kindnessforafghans.org — minimal responsive CSS */
+:root {
+  --bg: #ffffff;
+  --text: #1b1b1b;
+  --muted: #6b7280;
+  --primary: #0b6;
+  --primary-dark: #0a5a47;
+  --border: #e5e7eb;
+  --surface: #f8fafc;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, sans-serif;
+  color: var(--text); background: var(--bg);
+}
+.container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+.header { background: var(--surface); border-bottom: 1px solid var(--border); }
+.header .container { display: flex; align-items: center; justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: 16px; }
+.brand img { height: 50px; width: auto; }
+.brand h1 { font-size: 20px; margin: 0; }
+nav a { color: var(--text); text-decoration: none; margin-left: 18px; font-weight: 600; }
+nav a.cta { background: var(--primary); color: #fff; padding: 10px 14px; border-radius: 10px; }
+nav a.cta:hover { background: var(--primary-dark); }
+.hero { padding: 60px 0; background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 60%); }
+.hero h2 { font-size: 36px; margin: 0 0 10px; }
+.hero p { font-size: 18px; color: var(--muted); margin: 0 0 24px; }
+.btn { display: inline-block; background: var(--primary); color: #fff; padding: 12px 18px; border-radius: 12px; text-decoration: none; font-weight: 600; }
+.btn:hover { background: var(--primary-dark); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+.card { border: 1px solid var(--border); border-radius: 14px; padding: 18px; background: #fff; }
+.card h3 { margin-top: 0; }
+.footer { border-top: 1px solid var(--border); padding: 24px 0; color: var(--muted); }
+.kicker { font-size: 14px; color: var(--muted); }
+img.responsive { max-width: 100%; height: auto; }
+.code { background: #f7f7f7; padding: 10px; border-radius: 10px; overflow-x: auto; }
+.form-inline { display: flex; gap: 8px; flex-wrap: wrap; }
+input[type="text"], input[type="email"], textarea { border: 1px solid var(--border); border-radius: 10px; padding: 10px; width: 100%; }
+label { font-size: 14px; color: var(--muted); }
+.news-list { display: flex; flex-direction: column; gap: 32px; max-width: 800px; margin: 0 auto; }
+.news-item { border-bottom: 1px solid var(--border); padding-bottom: 32px; }
+.news-item:last-child { border-bottom: none; }
+.news-meta { font-size: 14px; color: var(--muted); margin-bottom: 8px; display: block; }
+.news-title { margin: 0 0 12px; font-size: 24px; color: var(--text); }
+.news-content { line-height: 1.6; }
+.news-empty { text-align: center; color: var(--muted); padding: 40px 0; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0f172a; --text: #e5e7eb; --muted: #94a3b8; --border: #334155; --surface: #0b1220; }
+}
