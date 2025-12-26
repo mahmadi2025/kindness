@@ -104,12 +104,15 @@ body {
 .slideshow-container {
   width: 100%;
   max-width: 800px;
-  height: 400px;
+  height: 300px; /* Reduced from 400px */
   margin: 0 auto 40px auto;
   position: relative;
   overflow: hidden;
   border-radius: 12px;
   background: #eee;
+}
+@media (max-width: 600px) {
+  .slideshow-container { height: 180px; } /* Smaller on mobile */
 }
 .slide {
   position: absolute;
