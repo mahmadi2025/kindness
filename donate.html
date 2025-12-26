@@ -13,70 +13,53 @@
       <img src="assets/logo.png" alt="Logo" />
       <h1>Kindness for Afghans</h1>
     </div>
-    <nav>
+    <nav class="nav">
       <a href="index.html">Home</a>
-      <a href="news.html">News</a>
-      <a href="donate.html" class="cta">Donate</a>
+<a href="donate.html" class="active">Donate</a>
+<a href="news.html">News</a>
     </nav>
   </div>
 </header>
+
 <main class="container">
-  <h2>Donate via SEPA bank transfer</h2>
-  <p>Your support brings essentials and dignity to Afghan families.</p>
-
-  <section class="card">
-    <h3>Bank details (SEPA)</h3>
-    <p><strong>Account name:</strong> Kindness for Afghans</p>
-    <p><strong>IBAN:</strong> DE12 3456 7890 1234 5678 90</p>
-    <p><strong>BIC/SWIFT:</strong> GENERICONE</p>
-    <p><strong>Reference (Verwendungszweck):</strong> Donation — Kindness for Afghans</p>
+  <section class="hero" style="background: transparent; padding: 40px 0 20px;">
+    <h2>Support Our Work</h2>
+    <p>Your contribution directly impacts lives. Choose your preferred method below.</p>
   </section>
-
-  <section class="card">
-    <h3>Scan & donate (EPC/Girocode)</h3>
-    <div class="grid">
-      <div><img class="responsive" src="assets/epc-placeholder.png" alt="EPC QR placeholder" /></div>
-      <div>
-        <p>Copy the EPC payload below into any EPC QR generator if your app requires it:</p>
-        <div class="code"><pre>BCD
-002
-1
-SCT
-GENERICONE
-Kindness for Afghans
-DE12345678901234567890
-
-
-
-Support for Afghan families
-</pre></div>
-      </div>
-    </div>
-    <p class="kicker">Tip: Leave the amount line blank if you want donors to choose an amount in their app.</p>
-  </section>
-
-  <section class="card">
-    <h3>Monthly support (Standing Order)</h3>
-    <ol>
-      <li>Open your online banking and choose <em>Standing Order</em>.</li>
-      <li>Enter our IBAN/BIC, pick a monthly amount (e.g., €25), and use the reference above.</li>
-      <li>Confirm. You can edit or cancel any time.</li>
-    </ol>
-  </section>
-
-  <section class="card">
-    <h3>Receipts & transparency</h3>
-    <p>We provide receipts upon request and publish quarterly impact updates.</p>
-    <form class="form-inline" action="#" method="post" onsubmit="return false">
-      <label for="email">Request a receipt or updates:</label>
-      <input type="email" id="email" placeholder="you@example.com" />
-      <a class="btn" href="#">Send</a>
-    </form>
-  </section>
+  
+  <div class="donation-grid">
+        <div class="method-card">
+          <h3>Interac e-Transfer <small>(Canada)</small></h3>
+          <p>The fastest way to donate from a Canadian bank account.</p>
+          <div class="detail-row">
+            <span class="detail-label">Send to Email:</span>
+            <span class="detail-value">info@kindnessforafghans.org</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Message/Note:</span>
+            <span class="detail-value">Donation for Kindness for Afghans</span>
+          </div>
+        </div>
+        
+        <div class="method-card">
+          <h3>PayPal</h3>
+          <p>Secure donation via PayPal or Credit Card.</p>
+          <div style="text-align: center; margin-top: 20px;">
+            <a href="https://kindnessforafghans" target="_blank" class="btn">Donate via PayPal</a>
+            <p style="margin-top: 10px; font-size: 0.9em;"><a href="https://kindnessforafghans">kindnessforafghans</a></p>
+          </div>
+        </div>
+        </div>
+  
+  <div style="margin-top: 60px; text-align: center; color: #666;">
+    <p>Thank you for your kindness and trust.</p>
+  </div>
 </main>
+
 <footer class="footer">
   <div class="container">
-    <p>© Kindness for Afghans — Donate safely via SEPA. Contact: info@kindnessforafghans.org</p>
+    <p>&copy; 2025 Kindness for Afghans.</p>
+    <p>Contact: info@kindnessforafghans.org</p>
   </div>
 </footer>
 </body>
