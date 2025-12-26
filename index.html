@@ -22,6 +22,39 @@
 </header>
 
 <main class="container">
+  
+    <div class="slideshow-container">
+        
+        <div class="slide active">
+            <img src="assets/slideshow/ehsan-moradi-ZNXqLXs_-qI-unsplash.jpg" alt="Slide 1">
+        </div>
+        
+        <div class="slide">
+            <img src="assets/slideshow/pexels-faruktokluoglu-31093788.jpg" alt="Slide 2">
+        </div>
+        
+        <div class="slide">
+            <img src="assets/slideshow/salah-darwish-f_B4DzL_qyQ-unsplash.jpg" alt="Slide 3">
+        </div>
+        
+    </div>
+    
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let slides = document.querySelectorAll(".slide");
+        let current = 0;
+        if (slides.length > 1) {
+            setInterval(function() {
+                slides[current].classList.remove("active");
+                current = (current + 1) % slides.length;
+                slides[current].classList.add("active");
+            }, 4000); // Change image every 4 seconds
+        }
+    });
+    </script>
+    
+    
+
   <section class="hero">
     <h2>Dignity through direct support.</h2>
     <p>We provide food, heating, and essential supplies directly to families in need across Afghanistan.</p>
