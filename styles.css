@@ -167,6 +167,19 @@ body {
   font-family: monospace;
   font-size: 1.1em;
 }
+/* QR Code */
+.qr-container {
+    text-align: center;
+    margin-top: 15px;
+}
+.qr-container img {
+    max-width: 150px;
+    height: auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 5px;
+}
+
 /* News */
 .news-list { display: flex; flex-direction: column; gap: 40px; }
 .news-item { padding-bottom: 40px; border-bottom: 1px solid var(--border); }
