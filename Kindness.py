@@ -739,7 +739,7 @@ def main():
     out = Path(args.out)
     assets = out / "assets"
     
-    # Safe protection list so build never wipes out source/governance/media files
+    # Safe protection list so build never wipes out source/governance/media/documentation files
     PROTECTED_ITEMS = {
         "legal_and_governance",
         "field_reports",
@@ -749,6 +749,9 @@ def main():
         ".gitignore",
         ".git",
         "CNAME",
+        "README.md",
+        "AGENTS.md",
+        "DECISIONS.md",
     }
 
     # Create directories safely
