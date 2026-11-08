@@ -120,3 +120,22 @@ The custom domain `kindnessforafghans.org` needed DNS and SSL integration with G
 ### Consequences
 - Highly available worldwide CDN delivery backed by GitHub and Fastly.
 - Automatic HTTPS renewal at zero cost.
+
+---
+
+## ADR 007: Canadian Bank Reconciliation & MoneyGram Overseas Remittances
+
+- **Status:** Accepted & Implemented
+- **Date:** 2026-11-08
+
+### Context
+Direct international banking wires from Canadian financial institutions into Afghanistan face severe international banking restrictions. To transfer charitable funds for direct relief, the organization uses MoneyGram remittance services via authorized agent counters (specifically Shoppers Drug Mart locations in Ontario). On official bank statements, these remittances appear as point-of-sale debits titled `SHOPPERS DRUG M`.
+
+### Decision
+- In `financial_records/Kindness_for_Afghans_Financial_Ledger.xlsx`, maintain an exact replica of all Canadian bank statement transactions in the `Bank_Transactions` tab.
+- Explicitly categorize all `SHOPPERS DRUG M` debits ($912.00 on Apr 20, 2026; $962.00 on May 20, 2026; $962.00 on Aug 24, 2026) as **"Aid Sent to Kabul (MoneyGram)"**.
+- Cross-reference these debits to local disbursement reports received from authorized field agent Mr. Farzam under the International Agency Agreement.
+
+### Consequences
+- Complete three-way reconciliation (Canadian bank statement &rarr; MoneyGram remittance receipt &rarr; on-the-ground field distribution report).
+- Ready-for-audit documentation satisfying CRA direction and control standards.

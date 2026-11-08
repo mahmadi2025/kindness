@@ -124,3 +124,9 @@ python Kindness.py --help
   2. Standardize filenames matching `Attachment <N> <Description>.<ext>`.
   3. Update or create the `AUDIT_CHECKLIST.md` in that folder.
   4. Ensure the legal entity name is always recorded as **"Kindness for Afghans" (Ontario Corporation No. 1001294785)**.
+
+### Task D: Bank Reconciliation & Financial Ledger Maintenance
+- Internal accounting and bank reconciliation are tracked in `financial_records/Kindness_for_Afghans_Financial_Ledger.xlsx`.
+- **Shoppers Drug Mart Transactions:** Withdrawals labeled `SHOPPERS DRUG M` represent **MoneyGram remittances sent directly to Kabul** for emergency relief.
+- **Zeffy Deposits:** Bank deposits labeled `Zeffy-9355-0861 MSP` represent payouts from online donor contributions (0% platform fee).
+- Always ensure `financial_records/` and `*.xlsx` remain strictly excluded from Git.
