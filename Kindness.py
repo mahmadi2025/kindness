@@ -687,18 +687,18 @@ def run_git_automation(target_dir: Path):
     """Adds, commits, and pushes changes to GitHub."""
     print("\n--- GitHub Automation ---")
     try:
-        # Check status
         print("Running: git add .")
         subprocess.run(["git", "add", "."], cwd=target_dir, check=True)
         
-        print('Running: git commit -m "Update site via Kindness.py"')
-        # We allow commit to fail if there are no changes to commit
-        subprocess.run(["git", "commit", "-m", "Update site via Kindness.py"], cwd=target_dir)
-        
-        print("Running: git push --force")
-        subprocess.run(["git", "push", "--force"], cwd=target_dir, check=True)
-        
-        print("✅ Successfully pushed to GitHub!")
+        status = subprocess.run(["git", "status", "--porcelain"], cwd=target_dir, capture_output=True, text=True)
+        if status.stdout.strip():
+            print('Running: git commit -m "Update site via Kindness.py"')
+            subprocess.run(["git", "commit", "-m", "Update site via Kindness.py"], cwd=target_dir, check=True)
+            print("Running: git push origin main")
+            subprocess.run(["git", "push", "origin", "main"], cwd=target_dir, check=True)
+            print("✅ Successfully pushed to GitHub!")
+        else:
+            print("ℹ️ No changes to commit. Everything is up to date.")
     except subprocess.CalledProcessError as e:
         print(f"❌ Git error: {e}")
     except FileNotFoundError:
