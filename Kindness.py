@@ -743,6 +743,7 @@ def main():
     PROTECTED_ITEMS = {
         "legal_and_governance",
         "field_reports",
+        "financial_records",
         "branding",
         "website_photos",
         "Kindness.py",

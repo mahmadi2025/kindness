@@ -5,10 +5,15 @@
 # 1. Confidential & Private Folders (NEVER push to public repo)
 legal_and_governance/
 field_reports/
+financial_records/
 
-# 2. Sensitive document and media types
+# 2. Sensitive document, spreadsheet and media types
 *.pdf
 *.docx
+*.doc
+*.xlsx
+*.xls
+*.csv
 *.mp4
 *.mov
 *.avi
