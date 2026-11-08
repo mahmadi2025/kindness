@@ -74,7 +74,7 @@ python Kindness.py --github
 
 To protect the safety and dignity of vulnerable beneficiaries:
 - **Never commit beneficiary records to Git:** Beneficiary thumbprints, individual medical details, and raw distribution records are quarantined in `field_reports/` and blocked by [`.gitignore`](.gitignore).
-- **Public transparency:** The public website publishes aggregate impact figures (e.g. *"AFN 41,200 deployed to 6 families and 3 medical patients"*) while preserving recipient anonymity.
+- **Public transparency:** The public website publishes aggregate impact figures (e.g. *"AFN 122,700 ($2,836 CAD) deployed across three missions for families and medical patients"*) while preserving recipient anonymity.
 
 ---
 
