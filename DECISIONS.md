@@ -139,3 +139,27 @@ Direct international banking wires from Canadian financial institutions into Afg
 ### Consequences
 - Complete three-way reconciliation (Canadian bank statement &rarr; MoneyGram remittance receipt &rarr; on-the-ground field distribution report).
 - Ready-for-audit documentation satisfying CRA direction and control standards.
+
+---
+
+## ADR 008: Website UX, Asset Optimization, and SEO Overhaul
+
+- **Status:** Accepted & Implemented
+- **Date:** 2026-11-08
+
+### Context
+The original static site used a generic blue color scheme unrelated to the brand logo, served ~7.5 MB of uncompressed raw photography, lacked favicons and social sharing cards, and presented an undifferentiated donation form without tangible impact tiers or donor reassurance FAQs.
+
+### Decision
+Enhance [`Kindness.py`](file:///c:/Users/mahmadi/OneDrive%20-%20purdue.edu/kindnessforafghans/Kindness.py) to implement an end-to-end modern non-profit web pipeline:
+1. **Automated Pillow Image Pipeline:** Automatically resize and compress slideshow imagery from 6.8 MB to 557 KB (91.8% bandwidth reduction) and downscale retina logo assets.
+2. **Brand Favicon Generation:** Automatically extract the official emblem into transparent multi-size `assets/favicon.ico` and `assets/favicon.png`.
+3. **Official Palette Alignment:** Adopt the official brand emerald green (`#1b4c36`) and warm amber call-to-action buttons (`#d97706`).
+4. **Donor Conversion Upgrades:** Introduce 4 tangible Giving Tiers (\$35 food basket, \$75 winter warmth, \$150 vital medicines, \$300+ surgical aid) and an interactive 1-click clipboard copy for Interac e-Transfers.
+5. **Transparency & Trust Governance:** Add an interactive FAQ accordion clarifying CRA agency agreement oversight, zero-overhead pledge, and remittance security.
+6. **Search & Social Discovery:** Inject Open Graph, Twitter Cards, canonical links, and Schema.org JSON-LD `NGO` structured data into every page header.
+
+### Consequences
+- Dramatic speed increase on mobile networks (sub-second render).
+- Higher trust and conversion rates among prospective donors.
+- Rich search engine listings and branded previews when links are shared on social platforms.

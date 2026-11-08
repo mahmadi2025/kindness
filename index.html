@@ -3,101 +3,289 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Kindness for Afghans — Dignity through direct support</title>
-  <link rel="stylesheet" href="styles.css?v=1794165660" />
+  <title>Kindness for Afghans — Dignity Through Direct Support</title>
+  <meta name="description" content="Kindness for Afghans delivers emergency food parcels, critical surgeries, and prescription medicines directly to vulnerable families and widows across Afghanistan." />
+  <link rel="canonical" href="https://kindnessforafghans.org" />
+  
+  <!-- Favicon Links -->
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png" />
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+  <link rel="apple-touch-icon" href="assets/favicon.png" />
+
+  <!-- Open Graph / Social Sharing -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://kindnessforafghans.org" />
+  <meta property="og:title" content="Kindness for Afghans — Dignity Through Direct Support" />
+  <meta property="og:description" content="Kindness for Afghans delivers emergency food parcels, critical surgeries, and prescription medicines directly to vulnerable families and widows across Afghanistan." />
+  <meta property="og:image" content="https://kindnessforafghans.org/assets/logo.png" />
+  <meta property="og:site_name" content="Kindness for Afghans" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Kindness for Afghans — Dignity Through Direct Support" />
+  <meta name="twitter:description" content="Kindness for Afghans delivers emergency food parcels, critical surgeries, and prescription medicines directly to vulnerable families and widows across Afghanistan." />
+  <meta name="twitter:image" content="https://kindnessforafghans.org/assets/logo.png" />
+
+  <!-- Schema.org JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "NGO",
+    "name": "Kindness for Afghans",
+    "alternateName": "Kindness for Afghans Corporation",
+    "url": "https://kindnessforafghans.org",
+    "logo": "https://kindnessforafghans.org/assets/logo.png",
+    "description": "Registered Ontario Not-for-Profit Corporation (OCN: 1001294785) providing direct, verified emergency relief in Afghanistan.",
+    "identifier": "1001294785",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "9 Seedland Crescent",
+      "addressLocality": "Brampton",
+      "addressRegion": "ON",
+      "postalCode": "L6R 0Z6",
+      "addressCountry": "CA"
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "email": "info@kindnessforafghans.org",
+      "contactType": "donor support"
+    }
+  }
+  </script>
+  <link rel="stylesheet" href="styles.css?v=1794170005" />
 </head>
 <body>
+<div class="top-bar">
+  🇨🇦 <strong>Registered Ontario Not-for-Profit Corporation</strong> (OCN: 1001294785) • 100% Volunteer-Run • Zero Admin Fee Deductions
+</div>
 <header class="header">
   <div class="container">
-    <div class="brand">
-      <img src="assets/logo.png" alt="Logo" />
-      <h1>Kindness for Afghans</h1>
-    </div>
+    <a href="index.html" class="brand">
+      <img src="assets/logo.png" alt="Kindness for Afghans Logo" />
+      <div class="brand-text">
+        <h1>Kindness for Afghans</h1>
+        <p>Dignity through direct support</p>
+      </div>
+    </a>
     <nav class="nav">
       <a href="index.html" class="active">Home</a>
-<a href="donate.html">Donate</a>
-<a href="news.html">News</a>
+      <a href="donate.html">Donate</a>
+      <a href="news.html">News & Transparency</a>
+      <a href="donate.html" class="nav-donate-btn">Donate Now</a>
     </nav>
   </div>
 </header>
 
 <main class="container">
-  
-    <div class="slideshow-container">
-        
+  <div class="slideshow-wrapper">
+      <div class="slideshow-container">
         <div class="slide active">
-            <img src="assets/slideshow/ehsan-moradi-ZNXqLXs_-qI-unsplash.jpg" alt="Slide 1">
+          <img src="assets/slideshow/ehsan-moradi-ZNXqLXs_-qI-unsplash.jpg" alt="Kindness for Afghans humanitarian relief 1" loading="eager" />
+          <div class="slide-caption">Delivering hope and emergency relief directly to vulnerable households in local communities.</div>
         </div>
-        
         <div class="slide">
-            <img src="assets/slideshow/pexels-faruktokluoglu-31093788.jpg" alt="Slide 2">
+          <img src="assets/slideshow/pexels-faruktokluoglu-31093788.jpg" alt="Kindness for Afghans humanitarian relief 2" loading="lazy" />
+          <div class="slide-caption">Providing food parcels, warmth, and winter heating to widows and families facing severe hardship.</div>
         </div>
-        
         <div class="slide">
-            <img src="assets/slideshow/salah-darwish-f_B4DzL_qyQ-unsplash.jpg" alt="Slide 3">
+          <img src="assets/slideshow/salah-darwish-f_B4DzL_qyQ-unsplash.jpg" alt="Kindness for Afghans humanitarian relief 3" loading="lazy" />
+          <div class="slide-caption">100% direct humanitarian aid: essential food staples, emergency surgeries, and medicines.</div>
         </div>
-        
+      </div>
+      <button class="slide-nav-btn slide-prev" aria-label="Previous slide">&#10094;</button>
+      <button class="slide-nav-btn slide-next" aria-label="Next slide">&#10095;</button>
+      <div class="slide-dots">
+        <span class="slide-dot active" data-index="0"></span><span class="slide-dot" data-index="1"></span><span class="slide-dot" data-index="2"></span>
+      </div>
     </div>
-    
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        let slides = document.querySelectorAll(".slide");
-        let current = 0;
-        if (slides.length > 1) {
-            setInterval(function() {
-                slides[current].classList.remove("active");
-                current = (current + 1) % slides.length;
-                slides[current].classList.add("active");
-            }, 4000); // Change image every 4 seconds
+document.addEventListener("DOMContentLoaded", function() {
+    let slides = document.querySelectorAll(".slide");
+    let dots = document.querySelectorAll(".slide-dot");
+    let prevBtn = document.querySelector(".slide-prev");
+    let nextBtn = document.querySelector(".slide-next");
+    let container = document.querySelector(".slideshow-wrapper");
+    let current = 0;
+    let timer = null;
+
+    function showSlide(index) {
+        if (!slides.length) return;
+        slides.forEach(function(s) { s.classList.remove("active"); });
+        dots.forEach(function(d) { d.classList.remove("active"); });
+        current = (index + slides.length) % slides.length;
+        slides[current].classList.add("active");
+        if (dots[current]) dots[current].classList.add("active");
+    }
+
+    function nextSlide() { showSlide(current + 1); }
+    function prevSlide() { showSlide(current - 1); }
+
+    function startTimer() {
+        if (!timer && slides.length > 1) {
+            timer = setInterval(nextSlide, 4500);
         }
-    });
-    </script>
-    
-    
+    }
+    function stopTimer() {
+        if (timer) { clearInterval(timer); timer = null; }
+    }
+
+    if (slides.length > 1) {
+        startTimer();
+        if (container) {
+            container.addEventListener("mouseenter", stopTimer);
+            container.addEventListener("mouseleave", startTimer);
+        }
+        if (nextBtn) nextBtn.addEventListener("click", function(e) { e.preventDefault(); nextSlide(); });
+        if (prevBtn) prevBtn.addEventListener("click", function(e) { e.preventDefault(); prevSlide(); });
+        dots.forEach(function(dot) {
+            dot.addEventListener("click", function() {
+                let idx = parseInt(dot.getAttribute("data-index"), 10);
+                showSlide(idx);
+            });
+        });
+
+        // Touch swipe support for mobile devices
+        let touchStartX = 0;
+        let touchEndX = 0;
+        if (container) {
+            container.addEventListener("touchstart", function(e) {
+                touchStartX = e.changedTouches[0].screenX;
+            }, {passive: true});
+            container.addEventListener("touchend", function(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                if (touchStartX - touchEndX > 40) { nextSlide(); }
+                else if (touchEndX - touchStartX > 40) { prevSlide(); }
+            }, {passive: true});
+        }
+    }
+});
+</script>
 
   <section class="hero">
-    <h2>Dignity through direct support.</h2>
-    <p>We provide food, heating, and essential supplies directly to families in need across Afghanistan.</p>
-    <br/>
-    <a href="donate.html" class="btn">Make a Donation</a>
+    <div class="hero-badge">
+      <span>🤝 100% Volunteer-Run • Zero Admin Fee Deductions</span>
+    </div>
+    <h2>Dignity Through Direct Support</h2>
+    <p>We deliver emergency food parcels, critical surgeries, vital medicines, and winter heating directly to widows, orphans, and vulnerable families across Afghanistan.</p>
+    <div class="hero-cta">
+      <a href="donate.html" class="btn btn-accent">Make a Direct Donation</a>
+      <a href="news.html" class="btn btn-secondary">View Verified Field Impact &rarr;</a>
+    </div>
   </section>
 
-  <section class="content">
-    <h3 class="section-title">Latest Direct Impact</h3>
+  <!-- Impact Statistics Counter -->
+  <section class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number">AFN 41.2K+</div>
+      <div class="stat-label">Direct Aid Deployed</div>
+      <div class="stat-subtext">In July 2026 emergency mission</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">6</div>
+      <div class="stat-label">Families Sustained</div>
+      <div class="stat-subtext">Multi-week emergency food hampers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">3</div>
+      <div class="stat-label">Medical Interventions</div>
+      <div class="stat-subtext">Hospital surgeries & essential medicines</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">100%</div>
+      <div class="stat-label">Direct Aid Guarantee</div>
+      <div class="stat-subtext">Zero administrative salary overhead</div>
+    </div>
+  </section>
+
+  <!-- Latest Direct Impact Spotlight -->
+  <section class="feature-box">
+    <h3>Latest Field Impact (July 2026 Mission)</h3>
     <p>
-      In July 2026, <strong>Kindness for Afghans</strong> completed another direct aid mission, deploying <strong>AFN 41,200</strong> in emergency relief directly on the ground:
+      In July 2026, <strong>Kindness for Afghans</strong> completed another direct emergency relief mission, deploying <strong>AFN 41,200</strong> in donor funds directly on the ground in Afghanistan:
     </p>
-    <ul style="line-height: 1.8; margin-left: 20px;">
-      <li><strong>Emergency Surgery:</strong> Financial assistance for a critical hospital surgery for a vulnerable female patient.</li>
-      <li><strong>Food Packages:</strong> Essential food rations delivered directly to 6 vulnerable households.</li>
-      <li><strong>Prescription Medicines:</strong> Urgent medication supplied to 2 patients requiring continuous treatment.</li>
+    <ul style="line-height: 1.85; margin: 15px 0 15px 22px;">
+      <li><strong>Critical Hospital Surgery:</strong> Financial assistance provided to cover life-saving hospital surgery costs for a vulnerable female patient.</li>
+      <li><strong>Emergency Food Hampers:</strong> Essential food parcels (flour, rice, cooking oil, lentils, and tea) delivered directly to 6 vulnerable households.</li>
+      <li><strong>Prescription Medicines:</strong> Urgent medication supplied to 2 patients requiring continuous clinical treatment.</li>
     </ul>
-    <p style="margin-top: 15px;">
-      <a href="news.html" style="font-weight: 600; color: var(--primary); text-decoration: none;">Read the full July 2026 Field Report &rarr;</a>
+    <p style="margin: 18px 0 0 0;">
+      <a href="news.html" style="font-weight: 700; color: var(--primary); text-decoration: none;">
+        Read the complete July 2026 Field Report & Itemized Breakdown &rarr;
+      </a>
     </p>
   </section>
 
-  <section class="content">
-    <h3 class="section-title">Our Mission</h3>
+  <!-- How We Work: The Three-Pillar Direct Model -->
+  <section class="section">
+    <div class="section-header">
+      <h3 class="section-title">How We Work</h3>
+      <p class="section-subtitle">A direct, accountable humanitarian model that eliminates middleman friction.</p>
+    </div>
+    <div class="pillars-grid">
+      <div class="pillar-card">
+        <div class="pillar-number">1</div>
+        <h4>Community Identification</h4>
+        <p>Our trusted local field coordinators assess communities directly, identifying families in acute distress—prioritizing widows, orphans, and households without income earners.</p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-number">2</div>
+        <h4>Zero-Middleman Delivery</h4>
+        <p>Relief supplies (food staples, pharmacy prescriptions, and winter fuels) are purchased directly from local vendors and hand-delivered directly to recipient households.</p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-number">3</div>
+        <h4>Full Audit Verification</h4>
+        <p>Under our CRA-compliant Agency Agreement, every expenditure is documented with itemized vendor receipts, recipient sign-off sheets with thumbprints, and field documentation.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mission & Legal Incorporation -->
+  <section class="section">
+    <div class="section-header">
+      <h3 class="section-title">Our Mission & Governance</h3>
+    </div>
     <p>
-      At <strong>Kindness for Afghans</strong>, our mission is to bring hope and relief to the most vulnerable families in Afghanistan, including widows, orphans, and households without income. We collect charitable donations from Canada, the United States, and other countries to provide food and essential supplies to individuals and families in urgent need.
+      At <strong>Kindness for Afghans</strong>, our mission is to restore dignity, hope, and relief to the most vulnerable families in Afghanistan. We collect charitable contributions from Canada, the United States, and internationally to deliver immediate, life-sustaining aid.
     </p>
     <p>
-      Our dedicated team operates within Afghanistan, working directly with local communities to identify families in crisis and deliver immediate assistance. This hands-on approach helps ensure that contributions reach those most in need.
+      Kindness for Afghans is an incorporated Ontario Not-for-Profit Corporation (Ontario Corporation Number: <strong>1001294785</strong>). We operate with complete financial transparency, maintaining formal agency agreements that satisfy Canada Revenue Agency (CRA) overseas direction-and-control standards.
     </p>
-    <p>
-      Kindness for Afghans is a registered charity in Ontario, Canada (Ontario Corporation Number: <strong>1001294785</strong>).
-    </p>
-    <p class="mission-note">
-       We accept donations via Interac e-Transfer (Canada), Zeffy (online), and international wire transfer. Every contribution, regardless of size, makes a meaningful difference.
-    </p>
+    <div style="margin-top: 24px; text-align: center;">
+      <a href="donate.html" class="btn btn-accent">Support Our Mission Today</a>
+    </div>
   </section>
 </main>
 
 <footer class="footer">
   <div class="container">
-    <p>&copy; 2025–2026 Kindness for Afghans. All rights reserved.</p>
-    <p>Contact us: <a href="mailto:info@kindnessforafghans.org">info@kindnessforafghans.org</a></p>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h4>Kindness for Afghans</h4>
+        <p>A registered Ontario Not-for-Profit Corporation (Ontario Corporation Number: <strong>1001294785</strong>). Dedicated to delivering emergency food, surgical aid, and life-essential supplies directly to the most vulnerable families in Afghanistan.</p>
+        <p><strong>100% Direct Relief Promise:</strong> 100% of donor funds are deployed on the ground under strict CRA agency agreements with zero executive salary overhead.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Quick Links</h5>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="donate.html">Donate Securely</a></li>
+          <li><a href="news.html">Field Reports & Transparency</a></li>
+          <li><a href="donate.html#faq">Donor FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contact & Head Office</h5>
+        <ul>
+          <li><strong>Email:</strong> <a href="mailto:info@kindnessforafghans.org">info@kindnessforafghans.org</a></li>
+          <li><strong>Address:</strong> 9 Seedland Crescent, Brampton, ON, L6R 0Z6, Canada</li>
+          <li><strong>Domain:</strong> <a href="https://kindnessforafghans.org">kindnessforafghans.org</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025–2026 Kindness for Afghans. All rights reserved. Registered Ontario Not-for-Profit Corporation No. 1001294785.</p>
+    </div>
   </div>
 </footer>
 </body>

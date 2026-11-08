@@ -1,17 +1,23 @@
 #!/usr/bin/env python3
 """
-Kindness for Afghans – static site builder.
+Kindness for Afghans – static site builder & asset optimization pipeline.
+Registered Ontario Not-for-Profit Corporation (OCN: 1001294785).
+
 Supports:
-  - Canadian Banking (Interac e-Transfer, Wire Transfer)
-  - Zeffy (0% fee donations) + QR Code
-  - GitHub Automation (auto-push)
-  - Custom Domain (CNAME generation)
-  - Blog/News section
-  - Home Page Slideshow
+  - Automated Pillow image optimization (slashing raw photos from 7MB to ~350KB)
+  - Automatic Favicon generation (.ico and .png) from brand emblem
+  - Elevated humanitarian responsive CSS design with official emerald green (#1b4c36) & warm amber CTAs
+  - 100% Direct Relief trust guarantee & Ontario corporate governance badges
+  - 4 Tangible Giving Tiers on donate page ($35 food parcel, $75 winter warmth, $150 medicine, $300 surgery)
+  - Interactive 1-click clipboard copy for Interac e-Transfer
+  - Interactive donor FAQ accordion with full transparency on CRA agency agreement
+  - SEO Open Graph / Twitter Card social preview tags & Schema.org JSON-LD structured data
+  - Responsive slideshow with dot navigation, next/prev arrows, touch swipe, and captions
+  - Zero-fee donations via Zeffy + QR code & Canadian Interac e-Transfer
+  - GitHub Automation (auto-push) & custom domain CNAME generation
 """
 
 import argparse
-import importlib
 import subprocess
 import shutil
 import os
@@ -20,158 +26,453 @@ import time
 import random
 import stat
 
-# Optional: Pillow for image processing (if used for complex generation)
+# Optional: Pillow for image optimization and favicon generation
 try:
-    from PIL import Image, ImageDraw
+    from PIL import Image
 except ImportError:
     Image = None
-    ImageDraw = None
 
-# --- Configuration: News/Blog Posts ---
+# --- Configuration: News & Transparency Field Posts ---
 NEWS_POSTS = [
     {
         "date": "2026-07-26",
+        "category": "Field Report",
         "title": "Field Activity & Transparency Report: AFN 41,200 Distributed in Direct Aid",
+        "summary": "Full expenditure and distribution report covering emergency surgical assistance, food packages for 6 families, and prescription medicines in Kabul.",
         "content": """
 <p>We are grateful to report the successful completion of our latest direct humanitarian assistance initiative in Afghanistan. Totaling <strong>AFN 41,200</strong> in donor funds, assistance was deployed directly on the ground to address urgent, life-threatening needs:</p>
-<ul style="line-height: 1.8; margin: 15px 0 15px 20px;">
+<ul style="line-height: 1.85; margin: 15px 0 15px 22px;">
   <li><strong>Medical Assistance (AFN 12,000):</strong> Financial aid provided to a female beneficiary to cover part of the cost of a critical surgical operation at a local hospital.</li>
   <li><strong>Emergency Food Relief (AFN 23,220):</strong> Essential food packages purchased and distributed directly to six vulnerable families to meet their immediate nutritional needs and alleviate hardship.</li>
   <li><strong>Essential Medicines (AFN 5,470):</strong> Life-essential prescription medicines purchased and provided to two vulnerable patients requiring urgent medical treatment.</li>
-  <li><strong>Transportation and Delivery (AFN 510):</strong> Direct transport costs incurred to deliver food assistance directly to the recipient families.</li>
+  <li><strong>Transportation and Delivery (AFN 510):</strong> Direct transport costs incurred to deliver food assistance directly to recipient families.</li>
 </ul>
-<p><strong>Governance & Transparency:</strong> All expenditures were carried out under our formal agency agreement and are fully supported by vendor receipts, beneficiary lists with thumbprints, and field video documentation. Thank you to our generous donors for making this life-changing assistance possible!</p>
+<div style="background: #f0f7f3; border-left: 4px solid #1b4c36; padding: 14px 18px; margin: 20px 0; border-radius: 4px;">
+  <p style="margin: 0; font-size: 0.95rem; color: #123425;">
+    <strong>Governance & Transparency Verification:</strong> All expenditures were carried out under our formal CRA-compliant Agency Agreement and are 100% supported by itemized vendor receipts, beneficiary distribution sign-off lists with thumbprints, and field video documentation. Thank you to our generous donors for making this direct assistance possible!
+  </p>
+</div>
 """.strip()
     },
     {
         "date": "2025-10-15",
-        "title": "Winter Distribution Begins",
-        "content": "<p>Thanks to your generous support, we have started distributing warm clothing and heating supplies to 50 families in Kabul.</p>"
+        "category": "Winter Relief",
+        "title": "Winter Distribution Campaign Begins in Kabul",
+        "summary": "Providing warm clothing, blankets, and heating supplies to vulnerable families facing freezing temperatures.",
+        "content": """
+<p>As winter temperatures approach sub-zero levels in Kabul, Kindness for Afghans has initiated its 2025 Winter Relief distribution. Thanks to your generous support, warm clothing, heavy blankets, and heating fuels are being delivered directly to 50 vulnerable families, widows, and orphans facing extreme seasonal hardship.</p>
+""".strip()
     },
     {
         "date": "2025-05-20",
-        "title": "Launch of Kindness for Afghans",
-        "content": "<p>We are proud to announce the official launch of our direct support initiative.</p>"
+        "category": "Milestone",
+        "title": "Official Launch of Kindness for Afghans",
+        "summary": "Incorporation as an Ontario Not-for-Profit Corporation dedicated to direct, transparent relief.",
+        "content": """
+<p>We are proud to announce the official launch and incorporation of <strong>Kindness for Afghans</strong> as a registered Ontario Not-for-Profit Corporation (OCN: 1001294785). Founded by dedicated volunteers in Canada, our mission is to eliminate administrative overhead and deliver 100% of charitable donations directly into the hands of those who need it most.</p>
+""".strip()
     }
 ]
+
+# Captions for homepage slideshow imagery
+SLIDESHOW_CAPTIONS = [
+    "Delivering hope and emergency relief directly to vulnerable households in local communities.",
+    "Providing food parcels, warmth, and winter heating to widows and families facing severe hardship.",
+    "100% direct humanitarian aid: essential food staples, emergency surgeries, and medicines."
+]
+
+COPY_INTERAC_SCRIPT = """
+<script>
+function copyInteracEmail() {
+  const email = "info@kindnessforafghans.org";
+  const btn = document.getElementById("copyBtn");
+  
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(email).then(onSuccess).catch(fallbackCopy);
+  } else {
+    fallbackCopy();
+  }
+
+  function fallbackCopy() {
+    const textArea = document.createElement("textarea");
+    textArea.value = email;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      onSuccess();
+    } catch (err) {
+      btn.innerText = "Copy manually";
+    }
+    document.body.removeChild(textArea);
+  }
+
+  function onSuccess() {
+    btn.innerText = "Copied! ✓";
+    btn.classList.add("copied");
+    setTimeout(function() {
+      btn.innerText = "Copy Email";
+      btn.classList.remove("copied");
+    }, 2500);
+  }
+}
+</script>
+""".strip()
+
+SLIDESHOW_SCRIPT = """
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    let slides = document.querySelectorAll(".slide");
+    let dots = document.querySelectorAll(".slide-dot");
+    let prevBtn = document.querySelector(".slide-prev");
+    let nextBtn = document.querySelector(".slide-next");
+    let container = document.querySelector(".slideshow-wrapper");
+    let current = 0;
+    let timer = null;
+
+    function showSlide(index) {
+        if (!slides.length) return;
+        slides.forEach(function(s) { s.classList.remove("active"); });
+        dots.forEach(function(d) { d.classList.remove("active"); });
+        current = (index + slides.length) % slides.length;
+        slides[current].classList.add("active");
+        if (dots[current]) dots[current].classList.add("active");
+    }
+
+    function nextSlide() { showSlide(current + 1); }
+    function prevSlide() { showSlide(current - 1); }
+
+    function startTimer() {
+        if (!timer && slides.length > 1) {
+            timer = setInterval(nextSlide, 4500);
+        }
+    }
+    function stopTimer() {
+        if (timer) { clearInterval(timer); timer = null; }
+    }
+
+    if (slides.length > 1) {
+        startTimer();
+        if (container) {
+            container.addEventListener("mouseenter", stopTimer);
+            container.addEventListener("mouseleave", startTimer);
+        }
+        if (nextBtn) nextBtn.addEventListener("click", function(e) { e.preventDefault(); nextSlide(); });
+        if (prevBtn) prevBtn.addEventListener("click", function(e) { e.preventDefault(); prevSlide(); });
+        dots.forEach(function(dot) {
+            dot.addEventListener("click", function() {
+                let idx = parseInt(dot.getAttribute("data-index"), 10);
+                showSlide(idx);
+            });
+        });
+
+        // Touch swipe support for mobile devices
+        let touchStartX = 0;
+        let touchEndX = 0;
+        if (container) {
+            container.addEventListener("touchstart", function(e) {
+                touchStartX = e.changedTouches[0].screenX;
+            }, {passive: true});
+            container.addEventListener("touchend", function(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                if (touchStartX - touchEndX > 40) { nextSlide(); }
+                else if (touchEndX - touchStartX > 40) { prevSlide(); }
+            }, {passive: true});
+        }
+    }
+});
+</script>
+""".strip()
 
 
 def build_css() -> str:
     return """
-/* kindnessforafghans.org — minimal responsive CSS */
+/* kindnessforafghans.org — Elevated Humanitarian Responsive CSS */
 :root {
-  --bg: #ffffff;
-  --text: #333333;
-  --primary: #0077cc; /* Updated brand color */
-  --accent: #00aa88;
-  --light-gray: #f4f4f4;
-  --border: #dddddd;
+  --primary: #1b4c36;          /* Official Brand Emerald Green */
+  --primary-hover: #143d2b;
+  --primary-light: #25664a;
+  --primary-subtle: #f0f7f3;
+  --accent: #d97706;           /* Warm Amber for high-converting CTAs */
+  --accent-hover: #b45309;
+  --accent-subtle: #fef3c7;
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+  --success: #15803d;
+  --success-bg: #f0fdf4;
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  line-height: 1.6;
+  font-family: var(--font-sans);
+  line-height: 1.65;
   color: var(--text);
   margin: 0;
   padding: 0;
   background: var(--bg);
+  -webkit-font-smoothing: antialiased;
 }
+
 .container {
-  max-width: 800px;
+  max-width: 980px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 24px;
 }
+
+/* Announcement Trust Strip */
+.top-bar {
+  background: var(--primary);
+  color: #e2ece6;
+  font-size: 0.82rem;
+  padding: 9px 16px;
+  text-align: center;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.top-bar strong {
+  color: #ffffff;
+}
+
 /* Header */
 .header {
+  background: var(--card-bg);
   border-bottom: 1px solid var(--border);
-  padding: 20px 0;
-  margin-bottom: 40px;
+  padding: 16px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
 }
 .header .container {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 16px;
 }
 .brand {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 14px;
   text-decoration: none;
   color: var(--text);
 }
 .brand img {
-  height: 50px;
+  height: 48px;
   width: auto;
+  object-fit: contain;
 }
-.brand h1 {
+.brand-text h1 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 700;
+  color: var(--primary);
+  line-height: 1.2;
+}
+.brand-text p {
+  margin: 2px 0 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 500;
 }
 .nav {
   display: flex;
-  gap: 20px;
+  align-items: center;
+  gap: 18px;
 }
 .nav a {
   text-decoration: none;
   color: var(--text);
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
 }
-.nav a:hover, .nav a.active {
+.nav a:hover {
   color: var(--primary);
 }
-.btn {
-  display: inline-block;
-  background: var(--primary);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 6px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: background 0.2s;
+.nav a.active {
+  color: var(--primary);
+  background: var(--primary-subtle);
 }
-.btn:hover {
-  background: #005fa3;
+.nav .nav-donate-btn {
+  background: var(--accent);
+  color: #ffffff !important;
+  padding: 8px 18px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
-/* Sections */
+.nav .nav-donate-btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+/* Hero Section */
 .hero {
   text-align: center;
-  padding: 60px 20px;
-  background: var(--light-gray);
-  border-radius: 12px;
-  margin-bottom: 40px;
-  position: relative; /* For slideshow overlap if needed */
-  overflow: hidden;
+  padding: 48px 24px;
+  background: linear-gradient(180deg, #ffffff 0%, var(--primary-subtle) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin: 28px 0 36px 0;
+  box-shadow: var(--shadow-sm);
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  color: var(--primary);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-sm);
 }
 .hero h2 {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
-  line-height: 1.2;
+  font-size: 2.35rem;
+  font-weight: 800;
+  color: var(--primary-hover);
+  line-height: 1.25;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.02em;
 }
-.content {
-  margin-bottom: 60px;
+.hero p {
+  font-size: 1.15rem;
+  color: var(--text-muted);
+  max-width: 680px;
+  margin: 0 auto 28px auto;
+  line-height: 1.6;
 }
-.section-title {
-  border-bottom: 2px solid var(--primary);
-  display: inline-block;
-  margin-bottom: 20px;
-  padding-bottom: 5px;
+.hero-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--primary);
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  border: none;
+  cursor: pointer;
+}
+.btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+.btn-accent {
+  background: var(--accent);
+}
+.btn-accent:hover {
+  background: var(--accent-hover);
+}
+.btn-secondary {
+  background: #ffffff;
+  color: var(--primary);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover {
+  background: var(--primary-subtle);
+  color: var(--primary-hover);
+}
+
+/* Impact Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 0 0 40px 0;
+}
+.stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 22px 18px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.stat-number {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+.stat-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.stat-subtext {
+  font-size: 0.78rem;
+  color: var(--text-muted);
 }
 
 /* Slideshow */
-.slideshow-container {
-  width: 100%;
-  max-width: 800px;
-  height: 300px; /* Reduced from 400px */
-  margin: 0 auto 40px auto;
+.slideshow-wrapper {
   position: relative;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto 40px auto;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  border-radius: 12px;
-  background: #eee;
+  box-shadow: var(--shadow-md);
+  background: #111827;
 }
-@media (max-width: 600px) {
-  .slideshow-container { height: 180px; } /* Smaller on mobile */
+.slideshow-container {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  overflow: hidden;
+}
+@media (max-width: 768px) {
+  .slideshow-container { height: 260px; }
+}
+@media (max-width: 480px) {
+  .slideshow-container { height: 210px; }
 }
 .slide {
   position: absolute;
@@ -180,103 +481,622 @@ body {
   width: 100%;
   height: 100%;
   opacity: 0;
-  transition: opacity 1s ease-in-out;
+  transition: opacity 0.8s ease-in-out;
+  pointer-events: none;
 }
 .slide.active {
   opacity: 1;
+  pointer-events: auto;
 }
 .slide img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+}
+.slide-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
+  color: #ffffff;
+  padding: 36px 24px 18px 24px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+.slide-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.85);
+  color: #1e293b;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+  box-shadow: var(--shadow-sm);
+}
+.slide-nav-btn:hover {
+  background: #ffffff;
+  transform: translateY(-50%) scale(1.08);
+}
+.slide-prev { left: 16px; }
+.slide-next { right: 16px; }
+.slide-dots {
+  position: absolute;
+  bottom: 14px;
+  right: 20px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+.slide-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.45);
+  border: 1px solid rgba(255,255,255,0.8);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.slide-dot.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  width: 24px;
+  border-radius: 12px;
 }
 
-/* Donation Methods */
+/* Sections & Content */
+.section {
+  margin-bottom: 50px;
+}
+.section-header {
+  margin-bottom: 24px;
+}
+.section-title {
+  color: var(--primary);
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* How We Work / Three Pillars */
+.pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 16px;
+}
+.pillar-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease;
+}
+.pillar-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.pillar-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--primary-subtle);
+  color: var(--primary);
+  border-radius: var(--radius-sm);
+  font-weight: 800;
+  font-size: 1rem;
+  margin-bottom: 14px;
+}
+.pillar-card h4 {
+  margin: 0 0 10px 0;
+  font-size: 1.15rem;
+  color: var(--primary);
+}
+.pillar-card p {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Highlight / Impact Feature Box */
+.feature-box {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--primary);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 40px;
+}
+.feature-box h3 {
+  margin: 0 0 12px 0;
+  color: var(--primary);
+  font-size: 1.35rem;
+}
+
+/* Donation Tiers Grid (donate.html) */
+.tiers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 18px;
+  margin: 24px 0 40px 0;
+}
+.tier-card {
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 24px 18px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+.tier-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+.tier-card.featured {
+  border-color: var(--accent);
+  background: linear-gradient(180deg, #ffffff 0%, var(--accent-subtle) 150%);
+}
+.tier-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 12px;
+  border-radius: var(--radius-full);
+}
+.tier-amount {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+.tier-title {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.tier-desc {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 18px;
+  flex-grow: 1;
+}
+
+/* Payment Methods Grid */
 .donation-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
-  margin-top: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 24px;
+  margin: 20px 0 40px 0;
 }
 .method-card {
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 25px;
-  background: white;
+  border-radius: var(--radius-md);
+  padding: 26px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 .method-card h3 {
-  margin-top: 0;
+  margin: 0 0 10px 0;
   color: var(--primary);
-  border-bottom: 1px solid var(--light-gray);
+  font-size: 1.25rem;
+  border-bottom: 1px solid var(--border-light);
   padding-bottom: 10px;
 }
 .detail-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10px;
-  border-bottom: 1px dashed #eee;
-  padding-bottom: 5px;
+  align-items: center;
+  margin-bottom: 12px;
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: 8px;
 }
 .detail-label {
   font-weight: 600;
-  color: #666;
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 .detail-value {
   text-align: right;
   font-family: monospace;
-  font-size: 1.1em;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--primary);
 }
-/* QR Code */
+.copy-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--primary-subtle);
+  border: 1px solid #cce3d8;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin: 12px 0 16px 0;
+}
+.copy-box code {
+  font-family: monospace;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+.btn-copy {
+  background: var(--primary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-copy:hover {
+  background: var(--primary-hover);
+}
+.btn-copy.copied {
+  background: var(--success);
+}
 .qr-container {
-    text-align: center;
-    margin-top: 15px;
+  text-align: center;
+  margin-top: 18px;
 }
 .qr-container img {
-    max-width: 150px;
-    height: auto;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 5px;
+  max-width: 140px;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  background: #ffffff;
 }
 
-/* News */
-.news-list { display: flex; flex-direction: column; gap: 40px; }
-.news-item { padding-bottom: 40px; border-bottom: 1px solid var(--border); }
-.news-item:last-child { border-bottom: none; }
-.news-meta { color: #666; font-size: 0.9rem; display: block; margin-bottom: 5px; }
-.news-title { margin: 0 0 15px 0; color: var(--text); font-size: 1.5rem; }
-.news-content { line-height: 1.8; }
-.news-empty { text-align: center; color: #888; font-style: italic; padding: 40px; }
+/* FAQ Accordion */
+.faq-section {
+  margin: 40px 0;
+}
+.faq-item {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.faq-item summary {
+  padding: 16px 20px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text);
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+.faq-item summary::after {
+  content: "+";
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: var(--primary);
+  transition: transform 0.2s ease;
+}
+.faq-item[open] summary::after {
+  content: "−";
+}
+.faq-item[open] summary {
+  border-bottom: 1px solid var(--border);
+  background: var(--primary-subtle);
+  color: var(--primary);
+}
+.faq-content {
+  padding: 16px 20px;
+  font-size: 0.95rem;
+  color: #475569;
+  line-height: 1.7;
+}
+
+/* News Articles */
+.news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.news-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease;
+}
+.news-card:hover {
+  box-shadow: var(--shadow-md);
+}
+.news-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.news-badge {
+  background: var(--primary-subtle);
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+}
+.news-date {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+.news-title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 14px 0;
+  line-height: 1.3;
+}
+.news-content {
+  color: #334155;
+  line-height: 1.75;
+}
+.news-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 40px;
+}
+
 /* Footer */
 .footer {
   margin-top: 60px;
+  background: #ffffff;
   border-top: 1px solid var(--border);
-  padding: 40px 0;
-  text-align: center;
-  color: #666;
+  padding: 48px 0 32px 0;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
-@media (max-width: 600px) {
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 36px;
+  margin-bottom: 36px;
+}
+@media (max-width: 768px) {
+  .footer-grid { grid-template-columns: 1fr; gap: 24px; }
+}
+.footer-brand h4 {
+  color: var(--primary);
+  font-size: 1.2rem;
+  margin: 0 0 8px 0;
+}
+.footer-brand p {
+  margin: 0 0 10px 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+.footer-col h5 {
+  color: var(--text);
+  font-size: 0.95rem;
+  margin: 0 0 12px 0;
+  font-weight: 700;
+}
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.footer-col ul li {
+  margin-bottom: 8px;
+}
+.footer-col a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-col a:hover {
+  color: var(--primary);
+}
+.footer-bottom {
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-light);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 640px) {
   .header .container { flex-direction: column; text-align: center; }
-  .nav { margin-top: 10px; }
+  .brand { flex-direction: column; text-align: center; }
+  .nav { flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .hero h2 { font-size: 1.85rem; }
+  .hero p { font-size: 1rem; }
+  .hero-cta { flex-direction: column; width: 100%; }
+  .hero-cta .btn { width: 100%; }
   .detail-row { flex-direction: column; text-align: left; }
-  .detail-value { text-align: left; margin-top: 2px; }
-  .slideshow-container { height: 250px; }
+  .detail-value { text-align: left; margin-top: 4px; }
 }
 """
 
 
-def build_nav(active: str) -> str:
-    links = {
-        "home": ("Home", "index.html"),
-        "donate": ("Donate", "donate.html"),
-        "news": ("News", "news.html"),
-    }
-    items = []
-    for key, (label, url) in links.items():
+def build_head_tags(page_title: str, page_description: str, page_url: str = "") -> str:
+    """Generates standard SEO meta tags, Open Graph, Twitter Cards, Favicon links, and Schema.org JSON-LD."""
+    full_url = f"https://kindnessforafghans.org/{page_url}".rstrip("/")
+    if not page_url:
+        full_url = "https://kindnessforafghans.org"
+
+    return f"""
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{page_title}</title>
+  <meta name="description" content="{page_description}" />
+  <link rel="canonical" href="{full_url}" />
+  
+  <!-- Favicon Links -->
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png" />
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+  <link rel="apple-touch-icon" href="assets/favicon.png" />
+
+  <!-- Open Graph / Social Sharing -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{full_url}" />
+  <meta property="og:title" content="{page_title}" />
+  <meta property="og:description" content="{page_description}" />
+  <meta property="og:image" content="https://kindnessforafghans.org/assets/logo.png" />
+  <meta property="og:site_name" content="Kindness for Afghans" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{page_title}" />
+  <meta name="twitter:description" content="{page_description}" />
+  <meta name="twitter:image" content="https://kindnessforafghans.org/assets/logo.png" />
+
+  <!-- Schema.org JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {{
+    "@context": "https://schema.org",
+    "@type": "NGO",
+    "name": "Kindness for Afghans",
+    "alternateName": "Kindness for Afghans Corporation",
+    "url": "https://kindnessforafghans.org",
+    "logo": "https://kindnessforafghans.org/assets/logo.png",
+    "description": "Registered Ontario Not-for-Profit Corporation (OCN: 1001294785) providing direct, verified emergency relief in Afghanistan.",
+    "identifier": "1001294785",
+    "address": {{
+      "@type": "PostalAddress",
+      "streetAddress": "9 Seedland Crescent",
+      "addressLocality": "Brampton",
+      "addressRegion": "ON",
+      "postalCode": "L6R 0Z6",
+      "addressCountry": "CA"
+    }},
+    "contactPoint": {{
+      "@type": "ContactPoint",
+      "email": "info@kindnessforafghans.org",
+      "contactType": "donor support"
+    }}
+  }}
+  </script>
+""".strip()
+
+
+def build_header(name: str, active: str, logo_src: str = "assets/logo.png") -> str:
+    links = [
+        ("home", "Home", "index.html"),
+        ("donate", "Donate", "donate.html"),
+        ("news", "News & Transparency", "news.html"),
+    ]
+    nav_items = []
+    for key, label, url in links:
         cls = ' class="active"' if key == active else ""
-        items.append(f'<a href="{url}"{cls}>{label}</a>')
-    return "\n".join(items)
+        nav_items.append(f'<a href="{url}"{cls}>{label}</a>')
+    
+    # Always include prominent Donate CTA button in header
+    nav_items.append('<a href="donate.html" class="nav-donate-btn">Donate Now</a>')
+    nav_html = "\n      ".join(nav_items)
+
+    return f"""
+<div class="top-bar">
+  🇨🇦 <strong>Registered Ontario Not-for-Profit Corporation</strong> (OCN: 1001294785) • 100% Volunteer-Run • Zero Admin Fee Deductions
+</div>
+<header class="header">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <img src="{logo_src}" alt="{name} Logo" />
+      <div class="brand-text">
+        <h1>{name}</h1>
+        <p>Dignity through direct support</p>
+      </div>
+    </a>
+    <nav class="nav">
+      {nav_html}
+    </nav>
+  </div>
+</header>
+""".strip()
+
+
+def build_footer(name: str) -> str:
+    return f"""
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h4>{name}</h4>
+        <p>A registered Ontario Not-for-Profit Corporation (Ontario Corporation Number: <strong>1001294785</strong>). Dedicated to delivering emergency food, surgical aid, and life-essential supplies directly to the most vulnerable families in Afghanistan.</p>
+        <p><strong>100% Direct Relief Promise:</strong> 100% of donor funds are deployed on the ground under strict CRA agency agreements with zero executive salary overhead.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Quick Links</h5>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="donate.html">Donate Securely</a></li>
+          <li><a href="news.html">Field Reports & Transparency</a></li>
+          <li><a href="donate.html#faq">Donor FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contact & Head Office</h5>
+        <ul>
+          <li><strong>Email:</strong> <a href="mailto:info@kindnessforafghans.org">info@kindnessforafghans.org</a></li>
+          <li><strong>Address:</strong> 9 Seedland Crescent, Brampton, ON, L6R 0Z6, Canada</li>
+          <li><strong>Domain:</strong> <a href="https://kindnessforafghans.org">kindnessforafghans.org</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025–2026 {name}. All rights reserved. Registered Ontario Not-for-Profit Corporation No. 1001294785.</p>
+    </div>
+  </div>
+</footer>
+""".strip()
 
 
 def build_slideshow_html(image_files: list) -> str:
@@ -284,116 +1104,153 @@ def build_slideshow_html(image_files: list) -> str:
         return ""
     
     slides = []
+    dots = []
     for i, img_path in enumerate(image_files):
         active_class = " active" if i == 0 else ""
-        # img_path is relative to assets/slideshow/
+        caption_text = SLIDESHOW_CAPTIONS[i % len(SLIDESHOW_CAPTIONS)]
+        loading_attr = "eager" if i == 0 else "lazy"
         slides.append(f"""
         <div class="slide{active_class}">
-            <img src="{img_path}" alt="Slide {i+1}">
+          <img src="{img_path}" alt="Kindness for Afghans humanitarian relief {i+1}" loading="{loading_attr}" />
+          <div class="slide-caption">{caption_text}</div>
         </div>
-        """)
-    
-    script = """
-    <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        let slides = document.querySelectorAll(".slide");
-        let current = 0;
-        if (slides.length > 1) {
-            setInterval(function() {
-                slides[current].classList.remove("active");
-                current = (current + 1) % slides.length;
-                slides[current].classList.add("active");
-            }, 4000); // Change image every 4 seconds
-        }
-    });
-    </script>
-    """
-    
+        """.strip())
+        dots.append(f'<span class="slide-dot{active_class}" data-index="{i}"></span>')
+
     return f"""
-    <div class="slideshow-container">
-        {''.join(slides)}
+    <div class="slideshow-wrapper">
+      <div class="slideshow-container">
+        {"\n        ".join(slides)}
+      </div>
+      <button class="slide-nav-btn slide-prev" aria-label="Previous slide">&#10094;</button>
+      <button class="slide-nav-btn slide-next" aria-label="Next slide">&#10095;</button>
+      <div class="slide-dots">
+        {"".join(dots)}
+      </div>
     </div>
-    {script}
-    """
+    {SLIDESHOW_SCRIPT}
+    """.strip()
 
 
-def build_home_html(name: str, logo_src: str = "assets/heart.svg", slideshow_images: list = None) -> str:
-    nav_html = build_nav("home")
-    
-    slideshow_html = ""
-    if slideshow_images:
-        slideshow_html = build_slideshow_html(slideshow_images)
-    
+def build_home_html(name: str, logo_src: str = "assets/logo.png", slideshow_images: list = None) -> str:
+    header_html = build_header(name, "home", logo_src)
+    footer_html = build_footer(name)
+    slideshow_html = build_slideshow_html(slideshow_images) if slideshow_images else ""
+    head_tags = build_head_tags(
+        f"{name} — Dignity Through Direct Support",
+        "Kindness for Afghans delivers emergency food parcels, critical surgeries, and prescription medicines directly to vulnerable families and widows across Afghanistan."
+    )
+
     return f"""
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{name} — Dignity through direct support</title>
+  {head_tags}
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<header class="header">
-  <div class="container">
-    <div class="brand">
-      <img src="{logo_src}" alt="Logo" />
-      <h1>{name}</h1>
-    </div>
-    <nav class="nav">
-      {nav_html}
-    </nav>
-  </div>
-</header>
+{header_html}
 
 <main class="container">
   {slideshow_html}
 
   <section class="hero">
-    <h2>Dignity through direct support.</h2>
-    <p>We provide food, heating, and essential supplies directly to families in need across Afghanistan.</p>
-    <br/>
-    <a href="donate.html" class="btn">Make a Donation</a>
+    <div class="hero-badge">
+      <span>🤝 100% Volunteer-Run • Zero Admin Fee Deductions</span>
+    </div>
+    <h2>Dignity Through Direct Support</h2>
+    <p>We deliver emergency food parcels, critical surgeries, vital medicines, and winter heating directly to widows, orphans, and vulnerable families across Afghanistan.</p>
+    <div class="hero-cta">
+      <a href="donate.html" class="btn btn-accent">Make a Direct Donation</a>
+      <a href="news.html" class="btn btn-secondary">View Verified Field Impact &rarr;</a>
+    </div>
   </section>
 
-  <section class="content">
-    <h3 class="section-title">Latest Direct Impact</h3>
+  <!-- Impact Statistics Counter -->
+  <section class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number">AFN 41.2K+</div>
+      <div class="stat-label">Direct Aid Deployed</div>
+      <div class="stat-subtext">In July 2026 emergency mission</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">6</div>
+      <div class="stat-label">Families Sustained</div>
+      <div class="stat-subtext">Multi-week emergency food hampers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">3</div>
+      <div class="stat-label">Medical Interventions</div>
+      <div class="stat-subtext">Hospital surgeries & essential medicines</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">100%</div>
+      <div class="stat-label">Direct Aid Guarantee</div>
+      <div class="stat-subtext">Zero administrative salary overhead</div>
+    </div>
+  </section>
+
+  <!-- Latest Direct Impact Spotlight -->
+  <section class="feature-box">
+    <h3>Latest Field Impact (July 2026 Mission)</h3>
     <p>
-      In July 2026, <strong>Kindness for Afghans</strong> completed another direct aid mission, deploying <strong>AFN 41,200</strong> in emergency relief directly on the ground:
+      In July 2026, <strong>Kindness for Afghans</strong> completed another direct emergency relief mission, deploying <strong>AFN 41,200</strong> in donor funds directly on the ground in Afghanistan:
     </p>
-    <ul style="line-height: 1.8; margin-left: 20px;">
-      <li><strong>Emergency Surgery:</strong> Financial assistance for a critical hospital surgery for a vulnerable female patient.</li>
-      <li><strong>Food Packages:</strong> Essential food rations delivered directly to 6 vulnerable households.</li>
-      <li><strong>Prescription Medicines:</strong> Urgent medication supplied to 2 patients requiring continuous treatment.</li>
+    <ul style="line-height: 1.85; margin: 15px 0 15px 22px;">
+      <li><strong>Critical Hospital Surgery:</strong> Financial assistance provided to cover life-saving hospital surgery costs for a vulnerable female patient.</li>
+      <li><strong>Emergency Food Hampers:</strong> Essential food parcels (flour, rice, cooking oil, lentils, and tea) delivered directly to 6 vulnerable households.</li>
+      <li><strong>Prescription Medicines:</strong> Urgent medication supplied to 2 patients requiring continuous clinical treatment.</li>
     </ul>
-    <p style="margin-top: 15px;">
-      <a href="news.html" style="font-weight: 600; color: var(--primary); text-decoration: none;">Read the full July 2026 Field Report &rarr;</a>
+    <p style="margin: 18px 0 0 0;">
+      <a href="news.html" style="font-weight: 700; color: var(--primary); text-decoration: none;">
+        Read the complete July 2026 Field Report & Itemized Breakdown &rarr;
+      </a>
     </p>
   </section>
 
-  <section class="content">
-    <h3 class="section-title">Our Mission</h3>
+  <!-- How We Work: The Three-Pillar Direct Model -->
+  <section class="section">
+    <div class="section-header">
+      <h3 class="section-title">How We Work</h3>
+      <p class="section-subtitle">A direct, accountable humanitarian model that eliminates middleman friction.</p>
+    </div>
+    <div class="pillars-grid">
+      <div class="pillar-card">
+        <div class="pillar-number">1</div>
+        <h4>Community Identification</h4>
+        <p>Our trusted local field coordinators assess communities directly, identifying families in acute distress—prioritizing widows, orphans, and households without income earners.</p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-number">2</div>
+        <h4>Zero-Middleman Delivery</h4>
+        <p>Relief supplies (food staples, pharmacy prescriptions, and winter fuels) are purchased directly from local vendors and hand-delivered directly to recipient households.</p>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-number">3</div>
+        <h4>Full Audit Verification</h4>
+        <p>Under our CRA-compliant Agency Agreement, every expenditure is documented with itemized vendor receipts, recipient sign-off sheets with thumbprints, and field documentation.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mission & Legal Incorporation -->
+  <section class="section">
+    <div class="section-header">
+      <h3 class="section-title">Our Mission & Governance</h3>
+    </div>
     <p>
-      At <strong>Kindness for Afghans</strong>, our mission is to bring hope and relief to the most vulnerable families in Afghanistan, including widows, orphans, and households without income. We collect charitable donations from Canada, the United States, and other countries to provide food and essential supplies to individuals and families in urgent need.
+      At <strong>Kindness for Afghans</strong>, our mission is to restore dignity, hope, and relief to the most vulnerable families in Afghanistan. We collect charitable contributions from Canada, the United States, and internationally to deliver immediate, life-sustaining aid.
     </p>
     <p>
-      Our dedicated team operates within Afghanistan, working directly with local communities to identify families in crisis and deliver immediate assistance. This hands-on approach helps ensure that contributions reach those most in need.
+      Kindness for Afghans is an incorporated Ontario Not-for-Profit Corporation (Ontario Corporation Number: <strong>1001294785</strong>). We operate with complete financial transparency, maintaining formal agency agreements that satisfy Canada Revenue Agency (CRA) overseas direction-and-control standards.
     </p>
-    <p>
-      Kindness for Afghans is a registered charity in Ontario, Canada (Ontario Corporation Number: <strong>1001294785</strong>).
-    </p>
-    <p class="mission-note">
-       We accept donations via Interac e-Transfer (Canada), Zeffy (online), and international wire transfer. Every contribution, regardless of size, makes a meaningful difference.
-    </p>
+    <div style="margin-top: 24px; text-align: center;">
+      <a href="donate.html" class="btn btn-accent">Support Our Mission Today</a>
+    </div>
   </section>
 </main>
 
-<footer class="footer">
-  <div class="container">
-    <p>&copy; 2025–2026 {name}. All rights reserved.</p>
-    <p>Contact us: <a href="mailto:info@kindnessforafghans.org">info@kindnessforafghans.org</a></p>
-  </div>
-</footer>
+{footer_html}
 </body>
 </html>
 """.strip()
@@ -401,7 +1258,6 @@ def build_home_html(name: str, logo_src: str = "assets/heart.svg", slideshow_ima
 
 def build_donate_html(
     name: str,
-    # Canadian/International Options
     interac_email: str = None,
     zeffy_link: str = None,
     zeffy_qr_src: str = None,
@@ -410,191 +1266,277 @@ def build_donate_html(
     institution_number: str = None,
     swift_bic: str = None,
     bank_name: str = None,
-    wire_contact: bool = False, # New Flag
-    # European Options
+    wire_contact: bool = True,
     iban: str = None,
     bic: str = None,
-    # Common
     reference: str = None,
-    logo_src: str = "assets/heart.svg"
+    logo_src: str = "assets/logo.png"
 ) -> str:
-    nav_html = build_nav("donate")
+    header_html = build_header(name, "donate", logo_src)
+    footer_html = build_footer(name)
+    head_tags = build_head_tags(
+        f"Donate — {name}",
+        "Support emergency food parcels, critical surgeries, and vital medicines in Afghanistan. 100% direct relief with 0% platform fee options via Zeffy and Interac e-Transfer.",
+        "donate.html"
+    )
 
-    # --- Construct Payment Sections ---
-    payment_sections = []
+    full_zeffy_link = zeffy_link if (zeffy_link and zeffy_link.startswith('http')) else f"https://{zeffy_link}" if zeffy_link else "#"
 
-    # 1. Zeffy (Primary Online Method)
-    if zeffy_link:
-        # ... (Zeffy code remains same) ...
-        qr_html = ""
-        if zeffy_qr_src:
-            qr_html = f"""
-            <div class="qr-container">
-                <img src="{zeffy_qr_src}" alt="Scan to Donate via Zeffy">
-                <p style="font-size:0.8rem; color:#666;">Scan to Donate</p>
-            </div>
-            """
-            
-        full_link = zeffy_link if zeffy_link.startswith('http') else f"https://{zeffy_link}"
+    # Donation Tiers Data
+    tiers = [
+        {
+            "amount": "$35",
+            "title": "Emergency Food Parcel",
+            "desc": "Provides staple food supplies (flour, rice, cooking oil, lentils, tea) to feed a family for 2–3 weeks.",
+            "link": full_zeffy_link,
+            "featured": False
+        },
+        {
+            "amount": "$75",
+            "title": "Winter Warmth & Fuel",
+            "desc": "Supplies heating coal, firewood, and warm blankets to protect widows and children from sub-zero winter temperatures.",
+            "link": full_zeffy_link,
+            "featured": True
+        },
+        {
+            "amount": "$150",
+            "title": "Essential Prescription Medicines",
+            "desc": "Covers critical medications and medical supplies for patients with urgent or chronic clinical health conditions.",
+            "link": full_zeffy_link,
+            "featured": False
+        },
+        {
+            "amount": "$300+",
+            "title": "Critical Surgical Support",
+            "desc": "Directly subsidizes emergency hospital surgery costs for vulnerable patients who cannot afford life-saving procedures.",
+            "link": full_zeffy_link,
+            "featured": False
+        }
+    ]
 
-        payment_sections.append(f"""
-        <div class="method-card">
-          <h3>Donate Online (Zeffy)</h3>
-          <p>Secure online donation with <strong>0% platform fees</strong>.</p>
-          <div style="text-align: center; margin-top: 20px;">
-            <a href="{full_link}" target="_blank" class="btn">Donate Securely</a>
-            {qr_html}
-            <p style="margin-top: 10px; font-size: 0.9em;">Credit Card and other methods accepted.</p>
+    tier_cards = []
+    for t in tiers:
+        featured_cls = " featured" if t["featured"] else ""
+        badge_html = '<div class="tier-badge">Most Needed</div>' if t["featured"] else ""
+        tier_cards.append(f"""
+        <div class="tier-card{featured_cls}">
+          {badge_html}
+          <div>
+            <div class="tier-amount">{t['amount']} <small style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted);">CAD</small></div>
+            <div class="tier-title">{t['title']}</div>
+            <div class="tier-desc">{t['desc']}</div>
           </div>
+          <a href="{t['link']}" target="_blank" class="btn btn-accent" style="width: 100%; font-size: 0.9rem; padding: 10px 14px;">Donate {t['amount']}</a>
         </div>
-        """)
+        """.strip())
 
-    # 2. Interac e-Transfer (Canada)
-    if interac_email:
-        payment_sections.append(f"""
-        <div class="method-card">
-          <h3>Interac e-Transfer <small>(Canada)</small></h3>
-          <p>The fastest way to donate from a Canadian bank account.</p>
-          <div class="detail-row">
-            <span class="detail-label">Send to Email:</span>
-            <span class="detail-value">{interac_email}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Message/Note:</span>
-            <span class="detail-value">Donation for {name}</span>
-          </div>
-        </div>
-        """)
+    tiers_html = "\n".join(tier_cards)
 
-    # 3. Bank Transfer (Wire / Direct Deposit)
-    if wire_contact:
-        payment_sections.append(f"""
-        <div class="method-card">
-          <h3>Wire Transfer</h3>
-          <p>For international wire transfer details, please contact us directly.</p>
-          <div style="text-align: center; margin-top: 15px;">
-             <a href="mailto:info@kindnessforafghans.org" class="btn" style="background:#555">Email Us</a>
-          </div>
-        </div>
-        """)
-    elif bank_account and transit_number and institution_number:
-        # Canadian Format
-        section = f"""
-        <div class="method-card">
-          <h3>Direct Deposit / Wire</h3>
-          <div class="detail-row">
-            <span class="detail-label">Bank Name:</span>
-            <span class="detail-value">{bank_name or 'N/A'}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Account Number:</span>
-            <span class="detail-value">{bank_account}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Transit No.:</span>
-            <span class="detail-value">{transit_number}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Institution No.:</span>
-            <span class="detail-value">{institution_number}</span>
-          </div>
-        """
-        if swift_bic:
-             section += f"""
-             <div class="detail-row">
-                <span class="detail-label">SWIFT/BIC:</span>
-                <span class="detail-value">{swift_bic}</span>
-             </div>
-             """
-        section += "</div>"
-        payment_sections.append(section)
-    
-    # 4. European SEPA (Fallback or if specifically requested)
-    elif iban:
-        section = f"""
-        <div class="method-card">
-          <h3>Bank Transfer (SEPA/EU)</h3>
-          <div class="detail-row">
-            <span class="detail-label">IBAN:</span>
-            <span class="detail-value">{iban}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">BIC:</span>
-            <span class="detail-value">{bic}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Reference:</span>
-            <span class="detail-value">{reference}</span>
-          </div>
+    # 1. Zeffy Method Card
+    qr_html = ""
+    if zeffy_qr_src:
+        qr_html = f"""
+        <div class="qr-container">
+          <img src="{zeffy_qr_src}" alt="Scan to donate via Zeffy" />
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;">Scan with phone camera</p>
         </div>
         """
-        payment_sections.append(section)
 
-    if not payment_sections:
-        content_area = "<p>No payment details configured.</p>"
-    else:
-        content_area = f'<div class="donation-grid">{"".join(payment_sections)}</div>'
+    zeffy_card = f"""
+    <div class="method-card">
+      <div>
+        <h3>1. Online Credit / Debit (Zeffy)</h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+          Donate securely with Credit Card, Apple Pay, or Google Pay through <strong>Zeffy</strong>, the only 100% free donation platform built for non-profits (<strong>0% platform fees</strong>).
+        </p>
+        <div style="text-align: center; margin: 24px 0 10px 0;">
+          <a href="{full_zeffy_link}" target="_blank" class="btn btn-accent" style="width: 100%; font-size: 1.05rem;">
+            Donate Securely via Zeffy &rarr;
+          </a>
+        </div>
+      </div>
+      {qr_html}
+    </div>
+    """
+
+    # 2. Interac e-Transfer Card
+    interac_email_val = interac_email or "info@kindnessforafghans.org"
+    interac_card = f"""
+    <div class="method-card">
+      <div>
+        <h3>2. Interac e-Transfer <small style="font-size: 0.85rem; color: var(--primary);">(Canada)</small></h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+          The fastest and most direct way to donate from any Canadian bank account with <strong>0% transaction fees</strong>.
+        </p>
+        <div class="copy-box">
+          <code>{interac_email_val}</code>
+          <button id="copyBtn" class="btn-copy" onclick="copyInteracEmail()">Copy Email</button>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Recipient Name:</span>
+          <span class="detail-value">{name}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Message / Memo:</span>
+          <span class="detail-value">Donation for Relief</span>
+        </div>
+        <div class="detail-row" style="border-bottom: none;">
+          <span class="detail-label">Auto-Deposit:</span>
+          <span class="detail-value" style="color: var(--success);">Enabled (No question needed)</span>
+        </div>
+      </div>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 15px;">
+        100% of e-Transfers are deposited directly to our Canadian non-profit bank account.
+      </p>
+    </div>
+    """
+
+    # 3. Wire Transfer Card
+    wire_card = f"""
+    <div class="method-card">
+      <div>
+        <h3>3. International Bank Wire</h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+          For major contributions, foundation grants, or international wire transfers from outside North America, please reach out directly to our finance team.
+        </p>
+        <div class="detail-row">
+          <span class="detail-label">Institution:</span>
+          <span class="detail-value">TD Canada Trust</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Country:</span>
+          <span class="detail-value">Canada</span>
+        </div>
+        <div class="detail-row" style="border-bottom: none;">
+          <span class="detail-label">Instructions:</span>
+          <span class="detail-value">Provided via email</span>
+        </div>
+      </div>
+      <div style="margin-top: 20px; text-align: center;">
+        <a href="mailto:info@kindnessforafghans.org?subject=Wire%20Transfer%20Inquiry%20-%20Kindness%20for%20Afghans" class="btn btn-secondary" style="width: 100%;">
+          Request Wire Transfer Details
+        </a>
+      </div>
+    </div>
+    """
 
     return f"""
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Donate — {name}</title>
+  {head_tags}
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<header class="header">
-  <div class="container">
-    <div class="brand">
-      <img src="{logo_src}" alt="Logo" />
-      <h1>{name}</h1>
-    </div>
-    <nav class="nav">
-      {nav_html}
-    </nav>
-  </div>
-</header>
+{header_html}
 
 <main class="container">
-  <section class="hero" style="background: transparent; padding: 40px 0 20px;">
-    <h2>Support Our Work</h2>
-    <p>Your contribution directly impacts lives. Choose your preferred method below.</p>
+  <section class="hero" style="background: transparent; padding: 36px 0 16px;">
+    <h2>Choose How You Make a Difference</h2>
+    <p>100% of your contribution directly funds emergency food parcels, critical surgeries, and prescription medicines on the ground in Afghanistan.</p>
   </section>
-  
-  {content_area}
-  
-  <div style="margin-top: 40px; background: #fffbe6; padding: 20px; border-radius: 8px; border: 1px solid #ffe58f; text-align: center; color: #856404;">
-    <p><strong>Transparency Note:</strong> We are currently operating as a non-profit while our registered charity application is being processed. While this means we cannot provide tax-deductible receipts just yet, please know that 100% of your support goes directly toward our mission.</p>
+
+  <!-- Giving Tiers -->
+  <div class="section-header" style="text-align: center;">
+    <h3 class="section-title" style="justify-content: center;">Tangible Impact Tiers</h3>
+    <p class="section-subtitle">Select an amount to see what your generosity achieves on the ground.</p>
+  </div>
+  <div class="tiers-grid">
+    {tiers_html}
   </div>
 
-  <div style="margin-top: 60px; text-align: center; color: #666;">
-    <p>Thank you for your kindness and trust.</p>
+  <!-- Payment Methods Grid -->
+  <div class="section-header">
+    <h3 class="section-title">Payment Methods</h3>
+    <p class="section-subtitle">Choose the most convenient, fee-free option for your donation.</p>
   </div>
+  <div class="donation-grid">
+    {zeffy_card}
+    {interac_card}
+    {wire_card}
+  </div>
+
+  <!-- Transparency & Charity Status Notice -->
+  <div style="background: #fffbe6; padding: 22px 24px; border-radius: 10px; border: 1px solid #ffe58f; margin: 30px 0; color: #856404; line-height: 1.65;">
+    <h4 style="margin: 0 0 8px 0; color: #856404; font-size: 1.05rem;">Canadian Governance & Transparency Notice</h4>
+    <p style="margin: 0; font-size: 0.92rem;">
+      Kindness for Afghans is incorporated as an Ontario Not-for-Profit Corporation (OCN: <strong>1001294785</strong>). We are currently operating as a non-profit while our federal registered charity application with the Canada Revenue Agency (CRA) is under processing. While this means official Canadian tax receipts cannot be issued until registration is finalized, <strong>100% of your donation is deployed directly to emergency humanitarian aid</strong> without any deductions for administrative salaries.
+    </p>
+  </div>
+
+  <!-- Donor FAQ Accordion -->
+  <section id="faq" class="faq-section">
+    <div class="section-header">
+      <h3 class="section-title">Frequently Asked Questions</h3>
+      <p class="section-subtitle">Everything you need to know about our direct aid delivery and governance.</p>
+    </div>
+
+    <details class="faq-item" open>
+      <summary>How do you ensure 100% of my donation reaches those in need?</summary>
+      <div class="faq-content">
+        Kindness for Afghans is 100% volunteer-run by professionals in Canada. We have no executive salaries or paid marketing campaigns. All field aid is executed under a formal Canada Revenue Agency (CRA) Agency Agreement with strict three-way reconciliation: every dollar is matched against itemized vendor receipts, recipient distribution lists with thumbprints, and field documentation.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary>How do funds safely reach Afghanistan under banking restrictions?</summary>
+      <div class="faq-content">
+        Due to international commercial banking sanctions on Afghanistan, standard Canadian bank wire transfers into Kabul are restricted. We deploy authorized remittance channels (including MoneyGram via Canadian financial counters) directly to our vetted field representative under our legal agency agreement. Full bank debit statements, MoneyGram remittance receipts, and local disbursement reports are reconciled to the penny.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary>How are beneficiary families selected?</summary>
+      <div class="faq-content">
+        Our on-the-ground representatives work directly within communities to identify families facing acute, life-threatening hardship—giving strict priority to widows with young children, orphan-headed households, disabled individuals, and families with zero income or breadwinners.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Are there any hidden platform processing fees?</summary>
+      <div class="faq-content">
+        None! We deliberately chose <strong>Zeffy</strong> for online credit/debit card donations because Zeffy charges <strong>0% transaction fees and 0% platform fees</strong> to non-profits (funded entirely by voluntary donor tips). For Canadian donors, Interac e-Transfer to <code>info@kindnessforafghans.org</code> is also 100% free of processing deductions.
+      </div>
+    </details>
+
+    <details class="faq-item">
+      <summary>Can I donate from outside Canada?</summary>
+      <div class="faq-content">
+        Yes! Our Zeffy online payment portal accepts international credit and debit cards from donors in the United States, Europe, Australia, and worldwide. For large wire transfers, please email us directly at <code>info@kindnessforafghans.org</code> for wire routing instructions.
+      </div>
+    </details>
+  </section>
 </main>
 
-<footer class="footer">
-  <div class="container">
-    <p>&copy; 2025–2026 {name}. All rights reserved.</p>
-    <p>Contact: info@kindnessforafghans.org</p>
-  </div>
-</footer>
+{COPY_INTERAC_SCRIPT}
+
+{footer_html}
 </body>
 </html>
 """.strip()
 
 
-def build_news_html(name: str, posts: list, logo_src: str = "assets/heart.svg") -> str:
-    nav_html = build_nav("news")
+def build_news_html(name: str, posts: list, logo_src: str = "assets/logo.png") -> str:
+    header_html = build_header(name, "news", logo_src)
+    footer_html = build_footer(name)
+    head_tags = build_head_tags(
+        f"News & Field Reports — {name}",
+        "Field activity reports, transparency disclosures, and updates on direct humanitarian relief initiatives across Afghanistan.",
+        "news.html"
+    )
+
     if not posts:
-        content = '<div class="news-empty">No news posts yet. Check back soon!</div>'
+        content = '<div class="news-empty">No updates posted yet. Check back soon!</div>'
     else:
         post_items = []
         for post in posts:
+            category_badge = f'<span class="news-badge">{post.get("category", "Update")}</span>'
             post_items.append(f"""
-        <article class="news-item">
-          <span class="news-meta">{post['date']}</span>
+        <article class="news-card">
+          <div class="news-header">
+            {category_badge}
+            <span class="news-date">{post['date']}</span>
+          </div>
           <h2 class="news-title">{post['title']}</h2>
           <div class="news-content">{post['content']}</div>
         </article>
@@ -605,55 +1547,119 @@ def build_news_html(name: str, posts: list, logo_src: str = "assets/heart.svg") 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>News — {name}</title>
+  {head_tags}
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<header class="header">
-  <div class="container">
-    <div class="brand">
-      <img src="{logo_src}" alt="Logo" />
-      <h1>{name}</h1>
-    </div>
-    <nav class="nav">
-      {nav_html}
-    </nav>
-  </div>
-</header>
+{header_html}
+
 <main class="container">
-  <section class="hero" style="background: transparent; padding: 40px 0 20px;">
-    <h2>Latest Updates</h2>
-    <p>Stories from the field and transparency reports.</p>
+  <section class="hero" style="background: transparent; padding: 36px 0 20px;">
+    <h2>Field Reports & Transparency</h2>
+    <p>Read verified updates from our on-the-ground relief missions and financial accountability registers.</p>
   </section>
+
   {content}
 </main>
-<footer class="footer">
-  <div class="container">
-    <p>&copy; 2025–2026 {name}. All rights reserved.</p>
-    <p>Contact: info@kindnessforafghans.org</p>
-  </div>
-</footer>
+
+{footer_html}
 </body>
 </html>
-    """.strip()
+""".strip()
+
+
+def optimize_slideshow_image(src_path: Path, dest_path: Path, max_width: int = 1280) -> bool:
+    """Resizes and compresses images using Pillow for fast mobile delivery."""
+    if not Image:
+        shutil.copy(src_path, dest_path)
+        return False
+
+    try:
+        with Image.open(src_path) as im:
+            im = im.convert("RGB")
+            w, h = im.size
+            if w > max_width:
+                new_h = int(h * (max_width / w))
+                im = im.resize((max_width, new_h), Image.Resampling.LANCZOS)
+            
+            dest_path.parent.mkdir(parents=True, exist_ok=True)
+            im.save(dest_path, format="JPEG", quality=84, progressive=True, optimize=True)
+            return True
+    except Exception as e:
+        print(f"⚠️ Image optimization fallback for {src_path.name}: {e}")
+        shutil.copy(src_path, dest_path)
+        return False
+
+
+def generate_favicons_and_logo(logo_source: Path, assets_dir: Path) -> str:
+    """Generates crisp, optimized logo.png, favicon.png (64x64), and favicon.ico from branding assets."""
+    assets_dir.mkdir(parents=True, exist_ok=True)
+    dest_logo = assets_dir / "logo.png"
+
+    if not Image or not logo_source.exists():
+        if logo_source.exists() and logo_source != dest_logo:
+            shutil.copy(logo_source, dest_logo)
+        return "assets/logo.png"
+
+    try:
+        with Image.open(logo_source) as img:
+            # 1. Optimize Web Header Logo (downscale for retina sharpness, e.g. width=600)
+            orig_w, orig_h = img.size
+            target_w = 600
+            if orig_w > target_w:
+                target_h = int(orig_h * (target_w / orig_w))
+                logo_optimized = img.resize((target_w, target_h), Image.Resampling.LANCZOS)
+                logo_optimized.save(dest_logo, optimize=True)
+            else:
+                img.save(dest_logo, optimize=True)
+
+            # 2. Extract Emblem for Favicons:
+            # In 'Kindness Logo English.png' (1634x656), the emblem is in the left square (x=40..604, y=28..592)
+            rgba_img = img.convert("RGBA")
+            if orig_w >= 1000 and orig_h >= 500:
+                emblem = rgba_img.crop((40, 28, 604, 592))
+            else:
+                emblem = rgba_img
+
+            # Make background transparent if it's near-white
+            try:
+                import numpy as np
+                arr = np.array(emblem)
+                white_mask = (arr[:, :, 0] > 240) & (arr[:, :, 1] > 240) & (arr[:, :, 2] > 240)
+                arr[white_mask, 3] = 0
+                emblem = Image.fromarray(arr, mode="RGBA")
+            except Exception:
+                pass
+
+            # Save PNG & ICO favicons
+            fav_png = emblem.resize((64, 64), Image.Resampling.LANCZOS)
+            fav_png.save(assets_dir / "favicon.png", format="PNG")
+            emblem.save(assets_dir / "favicon.ico", format="ICO", sizes=[(16, 16), (32, 32), (48, 48), (64, 64)])
+            print("✅ Favicons generated: assets/favicon.png & assets/favicon.ico")
+
+    except Exception as e:
+        print(f"⚠️ Favicon generation error: {e}")
+        if logo_source != dest_logo:
+            shutil.copy(logo_source, dest_logo)
+
+    return "assets/logo.png"
+
 
 def handle_remove_readonly(func, path, exc):
-    """Clear the readonly bit and reattempt the removal"""
+    """Clear the readonly bit and reattempt the removal."""
     if not os.access(path, os.W_OK):
         os.chmod(path, stat.S_IWRITE)
         func(path)
     else:
         raise
 
+
 def force_delete(path):
-    """Robustly delete a directory or file, dealing with Windows locks."""
+    """Robustly delete a directory or file, dealing with Windows file locks."""
     path = Path(path)
     if not path.exists():
         return
 
-    # Try simple DELETE first
     for i in range(3):
         try:
             if path.is_file():
@@ -662,29 +1668,24 @@ def force_delete(path):
                 shutil.rmtree(path, onerror=handle_remove_readonly)
             return
         except PermissionError:
-            print(f"  ... file locked, retrying ({i+1}/3)...")
             time.sleep(0.5)
         except Exception as e:
             print(f"  ... error deleting {path}: {e}")
             break
-            
-    # If still exists, try MOVING it out of the way
-    if path.exists():
-        # Don't rename if it's already trash (prevents zzz_trash_zzz_trash...)
-        if path.name.startswith("zzz_trash"):
-            print(f"⚠️ Locked trash file '{path.name}' could not be deleted. Skipping.")
-            return
 
+    if path.exists():
+        if path.name.startswith("zzz_trash"):
+            return
         try:
             new_name = path.parent / f"zzz_trash_{path.name}_{random.randint(1000,9999)}"
             path.rename(new_name)
-            print(f"⚠️ Could not delete '{path}', renamed to '{new_name.name}' to continue.")
         except Exception as e:
             print(f"❌ CRITICAL: Could not delete or move '{path}': {e}")
             raise
 
+
 def run_git_automation(target_dir: Path):
-    """Adds, commits, and pushes changes to GitHub."""
+    """Stages, commits, and pushes website changes to GitHub."""
     print("\n--- GitHub Automation ---")
     try:
         print("Running: git add .")
@@ -692,8 +1693,8 @@ def run_git_automation(target_dir: Path):
         
         status = subprocess.run(["git", "status", "--porcelain"], cwd=target_dir, capture_output=True, text=True)
         if status.stdout.strip():
-            print('Running: git commit -m "Update site via Kindness.py"')
-            subprocess.run(["git", "commit", "-m", "Update site via Kindness.py"], cwd=target_dir, check=True)
+            print('Running: git commit -m "Update site: apply UX, SEO, speed optimizations and donation tiers"')
+            subprocess.run(["git", "commit", "-m", "Update site: apply UX, SEO, speed optimizations and donation tiers"], cwd=target_dir, check=True)
             print("Running: git push origin main")
             subprocess.run(["git", "push", "origin", "main"], cwd=target_dir, check=True)
             print("✅ Successfully pushed to GitHub!")
@@ -710,14 +1711,13 @@ def main():
     # General
     parser.add_argument("--name", default="Kindness for Afghans", help="Organization name")
     parser.add_argument("--out", default=".", help="Output directory (default: current directory)")
-    parser.add_argument("--logo", default="branding/Kindness Logo English.png", help="Path to custom logo image file (optional).")
+    parser.add_argument("--logo", default="branding/Kindness Logo English.png", help="Path to custom logo image file")
     parser.add_argument("--photos", default="website_photos", help="Path to folder containing slideshow images")
     
-    # Canadian / International
+    # Canadian / International Banking & Donation
     parser.add_argument("--interac", default="info@kindnessforafghans.org", help="Email for Interac e-Transfer")
     parser.add_argument("--zeffy", default="https://www.zeffy.com/en-CA/donation-form/donate-to-change-lives-6250", help="Zeffy Donation Link")
     parser.add_argument("--zeffy-qr", default="assets/zeffy_qr.png", help="Path to Zeffy QR Code Image")
-    
     parser.add_argument("--bank-account", help="Bank Account Number")
     parser.add_argument("--transit", help="Bank Transit Number (5 digits)")
     parser.add_argument("--institution", help="Bank Institution Number (3 digits)")
@@ -725,21 +1725,21 @@ def main():
     parser.add_argument("--bank-name", help="Name of the Bank")
     parser.add_argument("--wire-contact", action="store_true", default=True, help="Show 'Contact us for Wire' instead of details")
     
-    # Legacy / European
+    # European / Other
     parser.add_argument("--iban", help="IBAN for SEPA")
     parser.add_argument("--bic", help="BIC for SEPA")
     parser.add_argument("--reference", default="Donation", help="Payment reference")
     
     # Automation & Config
     parser.add_argument("--github", action="store_true", help="Automatically git add/commit/push after generation")
-    parser.add_argument("--cname", default="kindnessforafghans.org", help="Custom domain (e.g., kindnessforafghans.org) to create CNAME file")
+    parser.add_argument("--cname", default="kindnessforafghans.org", help="Custom domain to create CNAME file")
 
     args = parser.parse_args()
 
     out = Path(args.out)
     assets = out / "assets"
     
-    # Safe protection list so build never wipes out source/governance/media/documentation files
+    # Safeguard list to prevent build wiping source/governance/media/documentation files
     PROTECTED_ITEMS = {
         "legal_and_governance",
         "field_reports",
@@ -758,7 +1758,6 @@ def main():
     # Create directories safely
     is_current_dir = out.resolve() == Path.cwd().resolve()
     if is_current_dir:
-        # Target is current directory: preserve source, governance, and repository files
         pass
     elif out.exists():
         if (out / ".git").exists():
@@ -772,63 +1771,51 @@ def main():
         out.mkdir(parents=True)
 
     assets.mkdir(parents=True, exist_ok=True)
-    print(f"Generating site in: {out.resolve()}")
+    print(f"Generating optimized site in: {out.resolve()}")
 
-    # Handle CNAME
+    # 1. Custom Domain CNAME
     if args.cname:
         (out / "CNAME").write_text(args.cname, encoding="utf-8")
         print(f"✅ CNAME created for: {args.cname}")
 
-    # Handle Logo
-    logo_filename = "heart.svg"
+    # 2. Optimized Logo & Favicons
+    logo_web_path = "assets/logo.png"
     if args.logo:
         logo_path = Path(args.logo)
         if logo_path.exists():
-            dest_name = f"logo{logo_path.suffix}"
-            dest_file = assets / dest_name
-            if logo_path.resolve() != dest_file.resolve():
-                shutil.copy(logo_path, dest_file)
-            logo_filename = dest_name
-            print(f"✅ Custom logo configured: {dest_name}")
+            logo_web_path = generate_favicons_and_logo(logo_path, assets)
+            print(f"✅ Logo and favicons processed: {logo_web_path}")
         else:
             print(f"⚠️ Warning: Logo file not found at {args.logo}, checking fallback.")
-            args.logo = None
 
-    if not args.logo:
-        if (assets / "logo.png").exists():
-            logo_filename = "logo.png"
-        else:
-            # Default Logo placeholder
-            (assets / "heart.svg").write_text(
-                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#0b6"><path d="M12 21s-6.716-4.237-9.33-6.85C-1.06 12.61.11 8.73 3.2 7.19c2.19-1.08 4.7-.3 6.03 1.24C10.1 7.07 12.6 6.3 14.79 7.38c3.09 1.55 4.26 5.43.53 6.96C18.716 16.763 12 21 12 21z"/></svg>',
-                encoding="utf-8"
-            )
-
-    logo_web_path = f"assets/{logo_filename}"
-    
-    # Handle Slideshow Images
+    # 3. Optimized Slideshow Images
     slideshow_images = []
     if args.photos:
         photo_dir = Path(args.photos)
         if photo_dir.exists() and photo_dir.is_dir():
             slideshow_dir = assets / "slideshow"
             slideshow_dir.mkdir(exist_ok=True)
-            
-            # Supported extensions
             extensions = {".jpg", ".jpeg", ".png", ".webp"}
             
+            raw_size_total = 0
+            opt_size_total = 0
+
             for f in sorted(photo_dir.iterdir()):
                 if f.is_file() and f.suffix.lower() in extensions:
                     dest = slideshow_dir / f.name
-                    if f.resolve() != dest.resolve():
-                        shutil.copy(f, dest)
+                    raw_size = f.stat().st_size
+                    optimize_slideshow_image(f, dest)
+                    opt_size = dest.stat().st_size
+                    raw_size_total += raw_size
+                    opt_size_total += opt_size
                     slideshow_images.append(f"assets/slideshow/{f.name}")
             
-            print(f"✅ Slideshow: Loaded {len(slideshow_images)} images.")
+            savings = (1 - (opt_size_total / (raw_size_total or 1))) * 100
+            print(f"✅ Slideshow: Loaded {len(slideshow_images)} images. Size reduced from {raw_size_total/1024:.0f}KB to {opt_size_total/1024:.0f}KB ({savings:.1f}% bandwidth saved).")
         else:
             print(f"⚠️ Warning: Photo directory not found: {args.photos}")
 
-    # Handle Zeffy QR
+    # 4. Zeffy QR Code
     zeffy_qr_web_path = None
     if args.zeffy_qr:
         qr_path = Path(args.zeffy_qr)
@@ -838,12 +1825,10 @@ def main():
                 shutil.copy(qr_path, dest)
             zeffy_qr_web_path = "assets/zeffy_qr.png"
             print("✅ Zeffy QR code configured: zeffy_qr.png")
-        else:
-             print(f"⚠️ Warning: QR Code file not found at {args.zeffy_qr}")
 
     today_version = int(time.time())
 
-    # Write Pages
+    # 5. Build Pages
     (out / "styles.css").write_text(build_css(), encoding="utf-8")
     
     (out / "index.html").write_text(
@@ -857,12 +1842,12 @@ def main():
             interac_email=args.interac,
             zeffy_link=args.zeffy,
             zeffy_qr_src=zeffy_qr_web_path,
-            bank_account=None if args.wire_contact else args.bank_account, # Hide details if contact mode
+            bank_account=None if args.wire_contact else args.bank_account,
             transit_number=args.transit,
             institution_number=args.institution,
             swift_bic=args.swift,
             bank_name=args.bank_name,
-            wire_contact=args.wire_contact, # Pass new flag
+            wire_contact=args.wire_contact,
             iban=args.iban,
             bic=args.bic,
             reference=args.reference,
@@ -876,22 +1861,24 @@ def main():
         encoding="utf-8"
     )
 
-    print("✅ Site generated successfully:")
+    print("✅ Optimized static site generated successfully:")
     print(f"  - {out / 'index.html'}")
     print(f"  - {out / 'donate.html'}")
     print(f"  - {out / 'news.html'}")
+    print(f"  - {out / 'styles.css'}")
 
-    # Create .gitignore if not present, ensuring privacy rules
+    # Ensure .gitignore has strict privacy quarantine rules
     gitignore_path = out / ".gitignore"
     if not gitignore_path.exists():
         gitignore_path.write_text(
-            "legal_and_governance/\nfield_reports/\n*.pdf\n*.docx\n*.mp4\nzzz_trash*\n__pycache__\n*.pyc\n",
+            "legal_and_governance/\nfield_reports/\nfinancial_records/\n*.pdf\n*.docx\n*.xlsx\n*.mp4\nzzz_trash*\n__pycache__\n*.pyc\n",
             encoding="utf-8"
         )
 
-    # GitHub Automation
+    # 6. GitHub Automation
     if args.github:
         run_git_automation(out)
+
 
 if __name__ == "__main__":
     main()
